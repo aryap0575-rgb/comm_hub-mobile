@@ -1,0 +1,140 @@
+name: fincome_mobile_mobile
+description: "fincome_mobile Mobile."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.16.1 <3.0.0"
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  webview_flutter: ^3.0.4
+  flutter_inappwebview: ^6.0.0
+  flutter_windowmanager: ^0.2.0
+  flutter_rounded_date_picker: ^3.0.4
+  syncfusion_flutter_calendar: ^26.2.14
+  # webview_flutter_android: ^3.16.4
+  url_launcher: ^6.0.20 # Check for the latest version
+  auth_buttons: ^1.0.1+4
+  badges: ^3.1.2
+  # chat message ui design
+  chat_bubbles: ^1.6.0
+  cupertino_icons: ^1.0.2
+  carousel_slider: ^4.0.0
+  # network connectivity checker
+  connectivity_plus: ^4.0.1
+  custom_pop_up_menu: ^1.2.3+1
+  # functional programming thingies
+  dartz: ^0.10.1
+  dots_indicator: ^3.0.0
+  # value equality
+  equatable: ^2.0.3
+  # for state management
+  flutter_bloc: ^8.0.1
+  flutter_rating_bar: ^4.0.0
+  flutter_svg: ^2.0.10
+  # service locator
+  get_it: ^7.2.0
+  google_fonts: ^4.0.0
+  grouped_list: ^5.1.2
+  # remote api call
+  http: ^1.2.1
+  # image picker from device
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+  percent_indicator: any
+  pinput: ^5.0.0
+  # local storage
+  shared_preferences: ^2.0.13
+  sliding_up_panel: ^2.0.0+1
+  sliver_tools: ^0.2.5
+  # datetime to time ago
+  timeago: ^3.2.2
+  toggle_switch: ^2.0.1
+
+  # Session management
+  flutter_secure_storage: ^8.0.0
+
+  # Notification
+  another_flushbar: ^1.12.30
+
+  #tambahan library
+  smart_auth: ^2.0.0
+  battery_plus: ^5.0.3
+  dropdown_button2: ^2.3.9
+  
+  flutter_native_splash: any
+  image_picker_for_web: any
+  shared_preferences_web: any
+  dart_levenshtein: ^1.0.1
+
+  dpad: any
+  
+  flutter_web_plugins:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # for to test
+  mocktail: ^1.0.3
+
+
+  flutter_lints: ^4.0.0
+  change_app_package_name: ^1.1.0
+  flutter_launcher_icons: any
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/javascripts/
+    - assets/images/
+    - assets/icons/
+
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+
+flutter_icons:
+  android: "app_icon"
+  ios: true
+  image_path: "assets/icons/masjid_icon.png"
