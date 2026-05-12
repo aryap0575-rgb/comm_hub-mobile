@@ -1,4 +1,4 @@
-package fincome_mobile
+package com.example.fincome_mobile
 
 import android.app.ActivityManager
 import android.content.Context

@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "fincome_mobile",
+            "name": "com.example.fincome_mobile",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "fincome_mobile (profile mode)",
+            "name": "com.example.fincome_mobile (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "fincome_mobile (release mode)",
+            "name": "com.example.fincome_mobile (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

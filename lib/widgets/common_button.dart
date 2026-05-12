@@ -1,5 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:fincome_mobile_mobile/widgets/tap_effect.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/tap_effect.dart';
 
 import 'package:flutter/material.dart';
 

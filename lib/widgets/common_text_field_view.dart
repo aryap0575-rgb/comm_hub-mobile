@@ -1,5 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:fincome_mobile_mobile/constants/text_styles.dart';
+import 'package:com.example.fincome_mobile_mobile/constants/text_styles.dart';
 import 'package:flutter/material.dart';
 
 class CommonTextFieldView extends StatefulWidget {

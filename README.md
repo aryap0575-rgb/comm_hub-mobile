@@ -1,4 +1,4 @@
-# fincome_mobile
+# com.example.fincome_mobile
 
 A new Flutter project.
 

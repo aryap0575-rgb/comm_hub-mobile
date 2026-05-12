@@ -1,6 +1,6 @@
 {
-    "name": "fincome_mobile",
-    "short_name": "fincome_mobile",
+    "name": "com.example.fincome_mobile",
+    "short_name": "com.example.fincome_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

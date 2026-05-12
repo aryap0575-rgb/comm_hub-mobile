@@ -1,14 +1,14 @@
 import 'dart:convert';
 
 import 'package:dpad/dpad.dart';
-import 'package:fincome_mobile_mobile/constants/text_styles.dart';
-import 'package:fincome_mobile_mobile/modules/authentication/models/auth_model.dart';
-import 'package:fincome_mobile_mobile/modules/url/urls.dart';
-import 'package:fincome_mobile_mobile/utils/k_images.dart';
-import 'package:fincome_mobile_mobile/utils/utils.dart';
-import 'package:fincome_mobile_mobile/widgets/common_button.dart';
-import 'package:fincome_mobile_mobile/widgets/common_text_field_view.dart';
-import 'package:fincome_mobile_mobile/widgets/custom_image.dart';
+import 'package:com.example.fincome_mobile_mobile/constants/text_styles.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/models/auth_model.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
+import 'package:com.example.fincome_mobile_mobile/utils/k_images.dart';
+import 'package:com.example.fincome_mobile_mobile/utils/utils.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/common_button.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/common_text_field_view.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/custom_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/router_name.dart';
