@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/change_password.dart';
 import 'package:dpad/dpad.dart';
 import 'package:com.example.fincome_mobile_mobile/constants/text_styles.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/authentication/models/auth_model.dart';
@@ -16,8 +17,7 @@ import '../../../core/router_name.dart';
 import 'package:http/http.dart' as http;
 
 class SigninForm extends StatefulWidget {
-  const SigninForm({Key? key, required this.tabController}) : super(key: key);
-  final TabController tabController;
+  const SigninForm({Key? key}) : super(key: key);
   @override
   State<SigninForm> createState() => _SigninFormState();
 }
@@ -150,14 +150,17 @@ class _SigninFormState extends State<SigninForm> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             TextField(
+              controller: username,
+              focusNode: usernameFocus,
               decoration: InputDecoration(
                 hintText: 'Contoh: aryasenpai@email.com',
                 prefixIcon: const Icon(Icons.email_outlined),
                 fillColor: const Color(0xFFE1F0F9),
                 filled: true,
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -169,12 +172,21 @@ class _SigninFormState extends State<SigninForm> {
                 const Text('Kata Sandi',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChangePasswordScreen(),
+                        ),
+                      );
+                    },
                     child: const Text('Lupa Kata Sandi?',
                         style: TextStyle(fontSize: 12))),
               ],
             ),
             TextField(
+              controller: password,
+              focusNode: passwordFocus,
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Minimal 8 karakter',
@@ -183,30 +195,62 @@ class _SigninFormState extends State<SigninForm> {
                 fillColor: const Color(0xFFE1F0F9),
                 filled: true,
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
             const SizedBox(height: 32),
 
             // Tombol Masuk
+            // Tombol Masuk
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  // validasi input
+                  if (_allValidation()) {
+                    // tampilkan loading
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+
+                    // panggil fungsi login
+                    await checkLogin(
+                      username.text.trim(),
+                      password.text.trim(),
+                      context,
+                    );
+
+                    // jika development mode gunakan ini:
+                    // await checkLoginDevelopment(
+                    //   username.text.trim(),
+                    //   password.text.trim(),
+                    //   context,
+                    // );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFC6132C),
                   elevation: 4,
                   shadowColor: const Color(0xFFC6132C).withOpacity(0.4),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Masuk',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Masuk',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -218,13 +262,13 @@ class _SigninFormState extends State<SigninForm> {
                 const Text('Belum punya akun?'),
                 TextButton(
                     onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SignUpForm(),
-          ),
-        );
-      },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignUpForm(),
+                        ),
+                      );
+                    },
                     child: const Text('Daftar sekarang',
                         style: TextStyle(fontWeight: FontWeight.bold))),
               ],

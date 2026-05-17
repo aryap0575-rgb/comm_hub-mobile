@@ -34,7 +34,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: SigninForm(
-        tabController: _tabController,
       ),
     );
   }

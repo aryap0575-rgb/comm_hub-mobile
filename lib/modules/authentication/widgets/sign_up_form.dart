@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/widgets/sign_in_form.dart';
 import 'package:dart_levenshtein/dart_levenshtein.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 // import 'package:com.example.fincome_mobile/core/router_name.dart';
@@ -352,7 +353,14 @@ class _SignUpFormState extends State<SignUpForm> {
               children: [
                 const Text('Sudah punya akun?'),
                 TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SigninForm(),
+          ),
+        );
+      },
                     child: const Text('Masuk',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,

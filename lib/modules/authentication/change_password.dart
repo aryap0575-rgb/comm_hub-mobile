@@ -10,6 +10,7 @@ import 'package:com.example.fincome_mobile_mobile/utils/utils.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/common_button.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/common_text_field_view.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/custom_image.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/widgets/sign_in_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/router_name.dart';
@@ -102,173 +103,135 @@ class _ChangePasswordState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Ganti Password',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           children: [
-            const SizedBox(height: 15),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Ubah Password',
-                style: GoogleFonts.poppins(
-                    height: 1, fontSize: 25, fontWeight: FontWeight.bold),
+            const SizedBox(height: 60),
+            // Logo & Brand
+            Container(
+              height: 100,
+              width: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC6132C),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.groups, color: Colors.white, size: 60),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'COMM.HUB',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFC6132C),
+                letterSpacing: 1.2,
               ),
             ),
-            const SizedBox(height: 5),
-            Align(
+            const Text('BALIKPAPAN',
+                style: TextStyle(fontSize: 12, letterSpacing: 2)),
+            const SizedBox(height: 48),
+
+            // Title Text
+            const Text(
+              'Atur Ulang Kata Sandi',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Silakan masukkan kata sandi baru Anda di bawah ini.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 40),
+
+            // Form Kata Sandi Baru
+            const Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  'Password baru harus berjumlah minimal delapan karakter, terdiri dari huruf kapital, huruf kecil, angka, dan karakter spesial',
-                  style: GoogleFonts.poppins(
-                      height: 1, fontSize: 12, fontWeight: FontWeight.w200),
-                )),
-            Form(
-              key: _formKeychange,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    validator: (value) {
-                      final numericRegex = RegExp(r'[0-9]');
-                      final smallCharRegex = RegExp(r'[a-z]');
-                      final bigCharRegex = RegExp(r'[A-Z]');
-                      final specialCharRegex = RegExp(r'[^\w\s]');
-                      if (value == null || value.isEmpty) {
-                        return 'Kolom password wajib diisi';
-                      } else if (value.length < 8) {
-                        return 'Password harus terdiri setidaknya 8 karakter';
-                      } else if (!smallCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 huruf kecil';
-                      } else if (!numericRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 angka';
-                      } else if (!bigCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 huruf besar';
-                      } else if (!specialCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 karakter spesial';
-                      } else {
-                        return null;
-                      }
-                    },
-                    controller: textCurrent,
-                    decoration: const InputDecoration(
-                      labelText: 'Password Lama',
-                      hintText: 'Masukkan Password Lama ',
-                      labelStyle:
-                          TextStyle(color: Color.fromARGB(255, 80, 80, 80)),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    validator: (value) {
-                      final numericRegex = RegExp(r'[0-9]');
-                      final smallCharRegex = RegExp(r'[a-z]');
-                      final bigCharRegex = RegExp(r'[A-Z]');
-                      final specialCharRegex = RegExp(r'[^\w\s]');
-                      if (value == null || value.isEmpty) {
-                        return 'Kolom password wajib diisi';
-                      } else if (value.length < 8) {
-                        return 'Password harus terdiri setidaknya 8 karakter';
-                      } else if (!smallCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 huruf kecil';
-                      } else if (!numericRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 angka';
-                      } else if (!bigCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 huruf besar';
-                      } else if (!specialCharRegex.hasMatch(value)) {
-                        return 'Password harus terdiri setidaknya 1 karakter spesial';
-                      } else {
-                        return null;
-                      }
-                    },
-                    obscureText: !_passwordVisible,
-                    controller: textpassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password Baru',
-                      hintText: 'Masukkan Password Baru',
-                      labelStyle: const TextStyle(
-                          color: Color.fromARGB(255, 80, 80, 80)),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _passwordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: grayColor,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _passwordVisible = !_passwordVisible;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    validator: (value) {
-                      final numericRegex = RegExp(r'[0-9]');
-                      final smallCharRegex = RegExp(r'[a-z]');
-                      final bigCharRegex = RegExp(r'[A-Z]');
-                      final specialCharRegex = RegExp(r'[^\w\s]');
-                      if (value == null || value.isEmpty) {
-                        return 'Kolom password wajib diisi';
-                      } else if (!numericRegex.hasMatch(value) ||
-                          !smallCharRegex.hasMatch(value) ||
-                          !bigCharRegex.hasMatch(value) ||
-                          !specialCharRegex.hasMatch(value)) {
-                        return 'Konfirmasi password tidak valid';
-                      } else if (value != textpassword.text) {
-                        return 'Kedua password tidak sama';
-                      } else {
-                        return null;
-                      }
-                    },
-                    obscureText: !_password2Visible,
-                    controller: textrepassword,
-                    decoration: InputDecoration(
-                      labelText: 'Konfirmasi Password',
-                      hintText: 'Masukkan konfirmasi password',
-                      labelStyle: const TextStyle(
-                          color: Color.fromARGB(255, 80, 80, 80)),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _password2Visible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: grayColor,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _password2Visible = !_password2Visible;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  PrimaryButton(
-                      text: 'Ganti',
-                      onPressed: () async {
-                        if (_formKeychange.currentState!.validate()) {
-                          ShowDialog.waitDialog(context: context);
-                          checkChanges(textCurrent.text, textpassword.text,
-                              textrepassword.text, context);
-                          textCurrent.clear();
-                          textpassword.clear();
-                          textrepassword.clear();
-                        }
-                      })
-                ],
+                child: Text('KATA SANDI BARU',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.brown))),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Minimal 8 karakter',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: const Icon(Icons.visibility_outlined),
+                fillColor: const Color(0xFFE1F0F9),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
               ),
             ),
+            const SizedBox(height: 24),
+
+            // Form Konfirmasi Kata Sandi Baru
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('KONFIRMASI KATA SANDI BARU',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.brown))),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Ulangi kata sandi',
+                prefixIcon: const Icon(Icons.sync_lock_outlined),
+                suffixIcon: const Icon(Icons.visibility_outlined),
+                fillColor: const Color(0xFFE1F0F9),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 40),
+
+            // Tombol Simpan
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC6132C),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Simpan Kata Sandi',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Back to Login
+            TextButton.icon(
+               onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SigninForm(),
+          ),
+        );
+      },
+              icon: const Icon(Icons.arrow_back,
+                  size: 18, color: Color(0xFFC6132C)),
+              label: const Text('Kembali ke Login',
+                  style: TextStyle(
+                      color: Color(0xFFC6132C), fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
