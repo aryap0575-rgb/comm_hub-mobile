@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dpad/dpad.dart';
 import 'package:com.example.fincome_mobile_mobile/constants/text_styles.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/authentication/models/auth_model.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/widgets/sign_up_form.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
 import 'package:com.example.fincome_mobile_mobile/utils/k_images.dart';
 import 'package:com.example.fincome_mobile_mobile/utils/utils.dart';
@@ -97,118 +98,161 @@ class _SigninFormState extends State<SigninForm> {
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context)
-          .copyWith(navigationMode: NavigationMode.directional),
-      child: DpadNavigator(
-        onBackPressed: () {
-          usernameFocus.unfocus();
-          passwordFocus.unfocus();
-        },
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
-          child: SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 80),
+            // Logo & Brand
+            // Ganti placeholder dengan logo FINDCOM Anda
+            Container(
+              height: 100,
+              width: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC6132C),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.groups, color: Colors.white, size: 60),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'COMM.HUB',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFC6132C),
+                letterSpacing: 1.2,
+              ),
+            ),
+            const Text('BALIKPAPAN',
+                style: TextStyle(fontSize: 12, letterSpacing: 2)),
+            const SizedBox(height: 48),
+
+            // Welcome Text
+            const Text(
+              'Selamat Datang di\nFINDCOM',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Masuk untuk menjelajahi berbagai komunitas menarik di sekitar Anda.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 40),
+
+            // Form Email
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Email',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+            const SizedBox(height: 8),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Contoh: aryasenpai@email.com',
+                prefixIcon: const Icon(Icons.email_outlined),
+                fillColor: const Color(0xFFE1F0F9),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Form Kata Sandi
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 0, 109, 68),
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(10),
-                            bottomRight: Radius.circular(10))),
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height,
-                      child: const CustomImage(
-                        path: Kimages.logoIconWhite,
-                        width: 180,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Selamat Datang',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 30),
-                            ),
-                          ),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Silahkan masuk untuk melanjutkan.',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 150, 150, 150),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          CommonTextFieldView(
-                            focusNode: usernameFocus,
-                            controller: username,
-                            errorText: _errorEmail,
-                            titleText: "Alamat Email",
-                            titleStyle: TextStyles(context)
-                                .getBoldStyle()
-                                .copyWith(fontSize: 15),
-                            padding: const EdgeInsets.only(left: 0, right: 0),
-                            hintText: 'Masukan alamat email',
-                            keyboardType: TextInputType.emailAddress,
-                            onChanged: (String txt) {},
-                          ),
-                          const SizedBox(height: 5),
-                          CommonTextFieldView(
-                            focusNode: passwordFocus,
-                            controller: password,
-                            errorText: _errorPassword,
-                            titleText: "Password",
-                            titleStyle: TextStyles(context)
-                                .getBoldStyle()
-                                .copyWith(fontSize: 15),
-                            padding: const EdgeInsets.only(left: 0, right: 0),
-                            hintText: 'Masukan password',
-                            keyboardType: TextInputType.emailAddress,
-                            isObscureText: true,
-                            onChanged: (String txt) {},
-                          ),
-                          const SizedBox(height: 8),
-                          // _buildForgotPassword(),
-                          const SizedBox(height: 8),
-                          CommonButton(
-                            buttonText: 'Masuk',
-                            onTap: () {
-                              if (_allValidation()) {
-                                ShowDialog.waitDialog(context: context);
-                                checkLogin(
-                                    username.text, password.text, context);
-                                // checkLoginDevelopment(
-                                //     username.text, password.text, context);
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                const Text('Kata Sandi',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                TextButton(
+                    onPressed: () {},
+                    child: const Text('Lupa Kata Sandi?',
+                        style: TextStyle(fontSize: 12))),
               ],
             ),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Minimal 8 karakter',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: const Icon(Icons.visibility_outlined),
+                fillColor: const Color(0xFFE1F0F9),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Tombol Masuk
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC6132C),
+                  elevation: 4,
+                  shadowColor: const Color(0xFFC6132C).withOpacity(0.4),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Masuk',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Register Link
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Belum punya akun?'),
+                TextButton(
+                    onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SignUpForm(),
           ),
+        );
+      },
+                    child: const Text('Daftar sekarang',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Divider
+            const Text('ATAU MASUK DENGAN',
+                style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 24),
+
+            // Google Button
+            OutlinedButton.icon(
+              onPressed: () {},
+              icon: Image.network(
+                  'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png',
+                  height: 24),
+              label:
+                  const Text('Google', style: TextStyle(color: Colors.black)),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 56),
+                side: BorderSide(color: Colors.grey.shade300),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
