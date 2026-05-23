@@ -23,6 +23,8 @@ import 'package:com.example.fincome_mobile_mobile/widgets/custom_image.dart';
 import '../../../core/router_name.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, this.from = 'splash'}) : super(key: key);
