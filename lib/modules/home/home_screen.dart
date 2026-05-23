@@ -12,6 +12,8 @@ import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/discover_screen.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/CommunityCard.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/CategoryItem.dart';
+// Tambah import ini
+import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
 import 'package:com.example.fincome_mobile_mobile/utils/k_images.dart';
 import 'package:com.example.fincome_mobile_mobile/utils/utils.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/common_button.dart';
@@ -284,10 +286,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildAccount() {
-    return const Center(
-      child: Text('Halaman Account\n(coming soon)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: Colors.grey)),
+    return ProfileScreen(
+      onLogout: () => logoutProcess(),
     );
   }
 
