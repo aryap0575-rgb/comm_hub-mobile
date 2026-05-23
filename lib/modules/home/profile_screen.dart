@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/daftar_komunitas_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback? onLogout;
@@ -85,48 +86,56 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // REGISTER CARD
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD90429),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.add, color: Colors.white),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const DaftarKomunitasScreen(),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Daftarkan Komunitas Anda",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Register Your Community",
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD90429),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white),
                   ),
-                ),
-                const Icon(Icons.arrow_forward, color: Colors.white),
-              ],
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Daftarkan Komunitas Anda",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Register Your Community",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              ),
             ),
           ),
-
           const SizedBox(height: 18),
 
           // HELP CARD
