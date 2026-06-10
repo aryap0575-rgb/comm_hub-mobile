@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class DaftarOrganisasiDraft {
   final String namaOrganisasi;
   final String tentangOrganisasi;
@@ -14,6 +16,11 @@ class DaftarOrganisasiDraft {
   final List<Map<String, dynamic>> departemen;
   final List<Map<String, dynamic>> gallery;
 
+  // BARU
+  final File? fotoProfil;
+  final File? fotoSampul;
+  final List<File> galleryFiles;
+
   DaftarOrganisasiDraft({
     required this.namaOrganisasi,
     required this.tentangOrganisasi,
@@ -27,6 +34,11 @@ class DaftarOrganisasiDraft {
     this.prestasi = const [],
     this.departemen = const [],
     this.gallery = const [],
+
+    // BARU
+    this.fotoProfil,
+    this.fotoSampul,
+    this.galleryFiles = const [],
   });
 
   DaftarOrganisasiDraft copyWith({
@@ -42,6 +54,11 @@ class DaftarOrganisasiDraft {
     List<Map<String, dynamic>>? prestasi,
     List<Map<String, dynamic>>? departemen,
     List<Map<String, dynamic>>? gallery,
+
+    // BARU
+    File? fotoProfil,
+    File? fotoSampul,
+    List<File>? galleryFiles,
   }) {
     return DaftarOrganisasiDraft(
       namaOrganisasi: namaOrganisasi ?? this.namaOrganisasi,
@@ -56,6 +73,11 @@ class DaftarOrganisasiDraft {
       prestasi: prestasi ?? this.prestasi,
       departemen: departemen ?? this.departemen,
       gallery: gallery ?? this.gallery,
+
+      // BARU
+      fotoProfil: fotoProfil ?? this.fotoProfil,
+      fotoSampul: fotoSampul ?? this.fotoSampul,
+      galleryFiles: galleryFiles ?? this.galleryFiles,
     );
   }
 }

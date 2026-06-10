@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
 import 'package:com.example.fincome_mobile_mobile/service/organisasi_service.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class DaftarKomunitasScreen3 extends StatefulWidget {
   final DaftarOrganisasiDraft draft;
@@ -13,15 +16,22 @@ class DaftarKomunitasScreen3 extends StatefulWidget {
 
 class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
   // Simulasi list gambar yang sudah diupload (pakai index sebagai dummy)
-  final List<String> _uploadedImages = [];
+  final List<File> _uploadedImages = [];
+  final ImagePicker _picker = ImagePicker();
   int _selectedNavIndex = 2;
   bool _isLoading = false;
-  void _addImage() {
-    // TODO: Integrasikan dengan image_picker package
-    // Contoh dummy — tambah placeholder
-    setState(() {
-      _uploadedImages.add('image_${_uploadedImages.length + 1}');
-    });
+  Future<void> _addImage() async {
+    final XFile? file = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (file != null) {
+      setState(() {
+        _uploadedImages.add(
+          File(file.path),
+        );
+      });
+    }
   }
 
   void _removeImage(int index) {
@@ -45,20 +55,25 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
         };
       }).toList();
 
-      final result = await OrganisasiService.daftarOrganisasi(
-        namaOrganisasi: widget.draft.namaOrganisasi,
-        tentangOrganisasi: widget.draft.tentangOrganisasi,
-        kategoriId: widget.draft.kategoriId,
-        userId: widget.draft.userId,
-        visi: widget.draft.visi,
-        misi: widget.draft.misi,
-        wa: widget.draft.wa,
-        email: widget.draft.email,
-        lokasi: widget.draft.lokasi,
-        prestasi: widget.draft.prestasi,
-        departemen: widget.draft.departemen,
-        gallery: galleryData,
-      );
+      final result =
+    await OrganisasiService.daftarOrganisasi(
+  namaOrganisasi: widget.draft.namaOrganisasi,
+  tentangOrganisasi: widget.draft.tentangOrganisasi,
+  kategoriId: widget.draft.kategoriId,
+  userId: widget.draft.userId,
+  visi: widget.draft.visi,
+  misi: widget.draft.misi,
+  wa: widget.draft.wa,
+  email: widget.draft.email,
+  lokasi: widget.draft.lokasi,
+  prestasi: widget.draft.prestasi,
+  departemen: widget.draft.departemen,
+  gallery: galleryData,
+
+  fotoProfil: widget.draft.fotoProfil,
+  fotoSampul: widget.draft.fotoSampul,
+  galleryFiles: _uploadedImages,
+);
 
       if (!mounted) return;
 
@@ -389,12 +404,9 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        color: Colors.grey.shade400,
-                        size: 36,
-                      ),
+                    child: Image.file(
+                      _uploadedImages[index],
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),

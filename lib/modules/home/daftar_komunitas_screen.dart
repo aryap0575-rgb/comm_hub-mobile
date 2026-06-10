@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
 import 'package:flutter/material.dart';
 import 'daftar_komunitas_screen2.dart';
+import 'package:image_picker/image_picker.dart';
 
 class DaftarKomunitasScreen extends StatefulWidget {
   const DaftarKomunitasScreen({Key? key}) : super(key: key);
@@ -15,6 +18,30 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
   final TextEditingController visiController = TextEditingController();
   final TextEditingController misiController = TextEditingController();
   String? selectedKategori;
+  File? fotoProfil;
+  File? fotoSampul;
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickFotoProfil() async {
+    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (file != null) {
+      setState(() {
+        fotoProfil = File(file.path);
+      });
+    }
+  }
+
+  Future<void> _pickFotoSampul() async {
+    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (file != null) {
+      setState(() {
+        fotoSampul = File(file.path);
+      });
+    }
+  }
 
   final Map<String, int> kategoriMap = {
     "Pendidikan": 6,
@@ -82,6 +109,8 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
                                   title: "FOTO PROFIL",
                                   icon: Icons.add_photo_alternate_outlined,
                                   subtitle: "Upload Logo",
+                                  image: fotoProfil,
+                                  onTap: _pickFotoProfil,
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -91,6 +120,8 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
                                   icon: Icons.cloud_upload_outlined,
                                   subtitle:
                                       "Rekomendasi\nPNG, JPG atau JPEG\nMaks. 2MB",
+                                  image: fotoSampul,
+                                  onTap: _pickFotoSampul,
                                 ),
                               ),
                             ],
@@ -201,6 +232,8 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
                             userId: 1,
                             visi: visiController.text.trim(),
                             misi: misiController.text.trim(),
+                            fotoProfil: fotoProfil,
+                            fotoSampul: fotoSampul,
                           );
 
                           Navigator.of(context).push(
@@ -327,45 +360,68 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
   }
 
   Widget _uploadBox({
-    required String title,
-    required IconData icon,
-    required String subtitle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-          ),
+  required String title,
+  required IconData icon,
+  required String subtitle,
+  File? image,
+  VoidCallback? onTap,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
         ),
-        const SizedBox(height: 8),
-        Container(
+      ),
+      const SizedBox(height: 8),
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
           height: 140,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE5CACA)),
+            border: Border.all(
+              color: const Color(0xFFE5CACA),
+            ),
             color: const Color(0xFFFAFAFA),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 34, color: Colors.brown.shade300),
-                const SizedBox(height: 10),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+          child: image != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    image,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 34,
+                        color: Colors.brown.shade300,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 }
