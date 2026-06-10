@@ -137,4 +137,4 @@ flutter:
 flutter_icons:
   android: "app_icon"
   ios: true
-  image_path: "assets/icons/masjid_icon.png"
+  image_path: "assets/icons/COMM_HUB.png"

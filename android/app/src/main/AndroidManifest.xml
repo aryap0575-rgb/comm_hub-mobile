@@ -9,7 +9,7 @@
         android:resizeableActivity="false"
         android:supportsPictureInPicture="false"
         android:usesCleartextTraffic="true"
-        android:label="com.example.fincome_mobile"
+        android:label="COMM.HUB"
         android:name="${applicationName}"
         android:icon="@mipmap/app_icon">
 

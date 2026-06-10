@@ -21,7 +21,7 @@ class _SplashScreenState extends State<AnimatedSplashScreen>
   Future startTime() async {
     var duration = const Duration(seconds: 3);
     return Timer(duration, () {
-      navigationPage(); // Call navigationPage method
+      navigationPage();
     });
   }
 
@@ -37,13 +37,13 @@ class _SplashScreenState extends State<AnimatedSplashScreen>
         Navigator.of(context).pushNamedAndRemoveUntil(
           RouteNames.signInScreen,
           (route) => false,
-        ); // Ensure previous routes are removed
+        );
       }
     } on Exception catch (_) {
       Navigator.of(context).pushNamedAndRemoveUntil(
         RouteNames.signInScreen,
         (route) => false,
-      ); // Ensure previous routes are removed
+      );
     }
   }
 
@@ -56,14 +56,21 @@ class _SplashScreenState extends State<AnimatedSplashScreen>
   @override
   void initState() {
     super.initState();
-    animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
-    animation =
-        CurvedAnimation(parent: animationController, curve: Curves.easeOut);
+
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    animation = CurvedAnimation(
+      parent: animationController,
+      curve: Curves.easeOut,
+    );
 
     animation.addListener(() {
       if (mounted) setState(() {});
     });
+
     animationController.forward();
 
     startTime();
@@ -77,31 +84,66 @@ class _SplashScreenState extends State<AnimatedSplashScreen>
         children: <Widget>[
           Container(
             decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 0, 109, 68),
+              color: Color.fromARGB(255, 255, 0, 0),
             ),
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
-            child: const CustomImage(path: Kimages.backgroundShape),
+            
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              CustomImage(
-                path: Kimages.logoIconWhite,
-                width: animation.value * 350,
-                height: animation.value * 350,
-              ),
-              // const SizedBox(height: 20),
-              // Text(
-              //   Kstrings.appName,
-              //   style: GoogleFonts.poppins(
-              //     fontSize: 50,
-              //     height: 1,
-              //     color: Colors.white,
-              //     fontWeight: FontWeight.w900,
-              //   ),
-              // ),
-            ],
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Transform.scale(
+                  scale: animation.value,
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC6132C),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.groups,
+                      color: Colors.white,
+                      size: 60,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Transform.scale(
+                  scale: animation.value,
+                  child: const Text(
+                    'COMM.HUB',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Transform.scale(
+                  scale: animation.value,
+                  child: const Text(
+                    'Communication & Collaboration',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
