@@ -1,7 +1,11 @@
+import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
+import 'package:com.example.fincome_mobile_mobile/service/organisasi_service.dart';
 import 'package:flutter/material.dart';
 
 class DaftarKomunitasScreen3 extends StatefulWidget {
-  const DaftarKomunitasScreen3({Key? key}) : super(key: key);
+  final DaftarOrganisasiDraft draft;
+  const DaftarKomunitasScreen3({Key? key, required this.draft})
+      : super(key: key);
 
   @override
   State<DaftarKomunitasScreen3> createState() => _DaftarKomunitasScreen3State();
@@ -11,7 +15,7 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
   // Simulasi list gambar yang sudah diupload (pakai index sebagai dummy)
   final List<String> _uploadedImages = [];
   int _selectedNavIndex = 2;
-
+  bool _isLoading = false;
   void _addImage() {
     // TODO: Integrasikan dengan image_picker package
     // Contoh dummy — tambah placeholder
@@ -24,6 +28,75 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
     setState(() {
       _uploadedImages.removeAt(index);
     });
+  }
+
+  Future<void> submitDaftarOrganisasi() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final galleryData = _uploadedImages.asMap().entries.map((entry) {
+        final index = entry.key;
+
+        return {
+          "informasi": "Galeri Kegiatan ${index + 1}",
+          "link": "",
+        };
+      }).toList();
+
+      final result = await OrganisasiService.daftarOrganisasi(
+        namaOrganisasi: widget.draft.namaOrganisasi,
+        tentangOrganisasi: widget.draft.tentangOrganisasi,
+        kategoriId: widget.draft.kategoriId,
+        userId: widget.draft.userId,
+        visi: widget.draft.visi,
+        misi: widget.draft.misi,
+        wa: widget.draft.wa,
+        email: widget.draft.email,
+        lokasi: widget.draft.lokasi,
+        prestasi: widget.draft.prestasi,
+        departemen: widget.draft.departemen,
+        gallery: galleryData,
+      );
+
+      if (!mounted) return;
+
+      if (result.metadata?.code == 200 || result.metadata?.code == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                result.metadata?.message ?? "Organisasi berhasil didaftarkan"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                result.metadata?.message ?? "Gagal mendaftarkan organisasi"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -206,25 +279,31 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: () {
-                          // TODO: submit form pendaftaran komunitas
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              "Daftar Sekarang",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                submitDaftarOrganisasi();
+                              },
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
                                 color: Colors.white,
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    "Daftar Sekarang",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward,
+                                      color: Colors.white, size: 20),
+                                ],
                               ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward,
-                                color: Colors.white, size: 20),
-                          ],
-                        ),
                       ),
                     ),
 

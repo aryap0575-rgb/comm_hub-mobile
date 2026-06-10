@@ -57,18 +57,16 @@ class _SigninFormState extends State<SigninForm> {
       } else if (response.statusCode == 201) {
         var respon = AuthModel.fromJson(jsonDecode(response.body));
         setState(() {
-          _errorPassword = respon.metadata!.message!;
+          _errorPassword = respon.message!;
         });
         Navigator.of(context).pop();
-        ShowNotif.warning(message: respon.metadata!.message!, context: context);
+        ShowNotif.warning(message: respon.message!, context: context);
         return respon;
       } else {
         var respon = AuthModel.fromJson(jsonDecode(response.body));
         Navigator.of(context).pop();
         ShowNotif.failed(
-            duration: 3000,
-            message: respon.metadata!.message!,
-            context: context);
+            duration: 3000, message: respon.message!, context: context);
         throw Exception('Failed to login.');
       }
     } catch (exc) {
@@ -209,6 +207,7 @@ class _SigninFormState extends State<SigninForm> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
+                  print("REGISTER DIKLIK");
                   // validasi input
                   if (_allValidation()) {
                     // tampilkan loading
@@ -346,5 +345,6 @@ class _SigninFormState extends State<SigninForm> {
     }
     setState(() {});
     return isValid;
+    print("SEBELUM REQUEST");
   }
 }

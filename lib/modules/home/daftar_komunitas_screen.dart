@@ -1,5 +1,6 @@
+import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
 import 'package:flutter/material.dart';
-import 'daftar_komunitas_screen2.dart'; // sesuaikan path import-nya
+import 'daftar_komunitas_screen2.dart';
 
 class DaftarKomunitasScreen extends StatefulWidget {
   const DaftarKomunitasScreen({Key? key}) : super(key: key);
@@ -15,14 +16,16 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
   final TextEditingController misiController = TextEditingController();
   String? selectedKategori;
 
-  final List<String> kategoriList = [
-    "Pendidikan",
-    "Sosial",
-    "Lingkungan",
-    "Teknologi",
-    "Olahraga",
-    "Keagamaan",
-  ];
+  final Map<String, int> kategoriMap = {
+    "Pendidikan": 6,
+    "Sosial": 2,
+    "Lingkungan": 3,
+    "Teknologi": 4,
+    "Olahraga": 5,
+    "Agama": 1,
+  };
+
+  late final List<String> kategoriList = kategoriMap.keys.toList();
 
   @override
   Widget build(BuildContext context) {
@@ -177,9 +180,33 @@ class _DaftarKomunitasScreenState extends State<DaftarKomunitasScreen> {
                           elevation: 0,
                         ),
                         onPressed: () {
+                          if (namaController.text.trim().isEmpty ||
+                              tentangController.text.trim().isEmpty ||
+                              visiController.text.trim().isEmpty ||
+                              misiController.text.trim().isEmpty ||
+                              selectedKategori == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    "Lengkapi data identitas organisasi terlebih dahulu"),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final draft = DaftarOrganisasiDraft(
+                            namaOrganisasi: namaController.text.trim(),
+                            tentangOrganisasi: tentangController.text.trim(),
+                            kategoriId: kategoriMap[selectedKategori]!,
+                            userId: 1,
+                            visi: visiController.text.trim(),
+                            misi: misiController.text.trim(),
+                          );
+
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const DaftarKomunitasScreen2(),
+                              builder: (_) =>
+                                  DaftarKomunitasScreen2(draft: draft),
                             ),
                           );
                         },

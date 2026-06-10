@@ -2,12 +2,12 @@ class Urls {
   // Local
 
   // final String mainUrl = 'http://192.168.102.101:8000';
-  final String mainUrl = 'http://192.168.1.4:8000';
+  final String mainUrl = 'http://192.168.1.2:8000';
   // final String mainUrl = 'https://sipintar.silatama.co.id';
 
   late String media = '$mainUrl/static/media/';
 
-  Uri signup() => Uri.parse('$mainUrl/mobile/signup/');
+  Uri signup() => Uri.parse('$mainUrl/mobile/register/');
   Uri signin() => Uri.parse('$mainUrl/mobile/login/');
   Uri forgotPass() => Uri.parse('$mainUrl/mobile/forgot/pass/');
   Uri changePass() => Uri.parse('$mainUrl/mobile/change/pass/');
@@ -25,4 +25,18 @@ class Urls {
   Uri wallpaper() => Uri.parse('$mainUrl/wallpaper/');
   Uri standbyWallpaper() => Uri.parse('$mainUrl/standbywallpaper/');
   Uri sliderJumat() => Uri.parse('$mainUrl/sliderjumat/');
+
+  Uri register() => Uri.parse('$mainUrl/mobile/register/');
+  Uri login() => Uri.parse('$mainUrl/mobile/login/');
+  Uri logout() => Uri.parse('$mainUrl/mobile/logout/');
+  Uri forgotPassword() => Uri.parse('$mainUrl/mobile/forgot/password/');
+  Uri resetPassword() => Uri.parse('$mainUrl/mobile/reset/password/');
+
+// Komunitas
+  Uri listKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/list/');
+  Uri detailKomunitas(int id) =>
+      Uri.parse('$mainUrl/mobile/komunitas/detail/$id/');
+  Uri daftarKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/daftar/');
+  Uri simpanKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/simpan/');
+  Uri tersimpanKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/tersimpan/');
 }

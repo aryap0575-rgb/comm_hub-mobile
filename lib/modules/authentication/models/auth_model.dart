@@ -1,43 +1,74 @@
 class AuthModel {
-  String? username;
+  String? status;
+  String? message;
   String? token;
-  Metadata? metadata;
+  User? user;
 
-  AuthModel({this.username, this.token, this.metadata});
+  AuthModel({
+    this.status,
+    this.message,
+    this.token,
+    this.user,
+  });
 
   AuthModel.fromJson(Map<String, dynamic> json) {
-    username = json['username'];
+    status = json['status'];
+    message = json['message'];
     token = json['token'];
-    metadata =
-        json['metadata'] != null ? Metadata.fromJson(json['metadata']) : null;
+    user = json['user'] != null
+        ? User.fromJson(json['user'])
+        : null;
   }
 
+  get username => null;
+
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['username'] = username;
+    final Map<String, dynamic> data = {};
+
+    data['status'] = status;
+    data['message'] = message;
     data['token'] = token;
-    if (metadata != null) {
-      data['metadata'] = metadata!.toJson();
+
+    if (user != null) {
+      data['user'] = user!.toJson();
     }
+
     return data;
   }
 }
 
-class Metadata {
-  int? code;
-  String? message;
+class User {
+  int? id;
+  String? username;
+  String? email;
+  String? fullname;
+  String? photo;
 
-  Metadata({this.code, this.message});
+  User({
+    this.id,
+    this.username,
+    this.email,
+    this.fullname,
+    this.photo,
+  });
 
-  Metadata.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
-    message = json['message'];
+  User.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    username = json['username'];
+    email = json['email'];
+    fullname = json['fullname'];
+    photo = json['photo'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['code'] = code;
-    data['message'] = message;
+    final Map<String, dynamic> data = {};
+
+    data['id'] = id;
+    data['username'] = username;
+    data['email'] = email;
+    data['fullname'] = fullname;
+    data['photo'] = photo;
+
     return data;
   }
 }

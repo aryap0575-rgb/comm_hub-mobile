@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/modules/authentication/model_sign_up.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/authentication/widgets/sign_in_form.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
 import 'package:dart_levenshtein/dart_levenshtein.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 // import 'package:com.example.fincome_mobile/core/router_name.dart';
@@ -10,6 +12,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 // import 'package:com.example.fincome_mobile/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/model_sign_up.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../utils/constants.dart';
 import '../../../../widgets/primary_button.dart';
@@ -27,6 +30,7 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _hasPasswordOneChar = false;
   bool _hasPasswordOneCharBig = false;
   bool _hasPasswordOneSpecialChar = false;
+  final Urls urls = Urls();
   // late ColorNotifire notifire;
   onPasswordChanged(String password) {
     final numericRegex = RegExp(r'[0-9]');
@@ -54,92 +58,48 @@ class _SignUpFormState extends State<SignUpForm> {
     });
   }
 
+  Future<LoginResponse> login({
+    required String username,
+    required String password,
+  }) async {
+    final response = await http.post(
+      urls.login(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return LoginResponse.fromJson(
+        jsonDecode(response.body),
+      );
+    }
+
+    throw Exception('Login gagal');
+  }
+
+  final TextEditingController firstNameController = TextEditingController();
+
+  final TextEditingController lastNameController = TextEditingController();
+
+  final TextEditingController emailController = TextEditingController();
+
+  final TextEditingController usernameController = TextEditingController();
+
+  final TextEditingController passwordController = TextEditingController();
+
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
   @override
   void initState() {
     super.initState();
     phoneNumber.text = '+62';
   }
-
-  // API POST
-  // Future<SignupModel> signupProcess(
-  //     String username,
-  //     String firstName,
-  //     String lastName,
-  //     String email,
-  //     String address,
-  //     String phoneNumber,
-  //     String nisn,
-  //     String password,
-  //     String confirmPassword,
-  //     String selectedClasses,
-  //     context) async {
-  //   ShowDialog.waitDialog(context: context);
-  //   final response = await http.post(
-  //     Urls().signup(),
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json; charset=UTF-8',
-  //     },
-  //     body: jsonEncode(<String, dynamic>{
-  //       'username': username,
-  //       'first_name': firstName,
-  //       'last_name': lastName,
-  //       'email': email,
-  //       'address': address,
-  //       'phone_number': phoneNumber,
-  //       'nisn': nisn,
-  //       'password': password,
-  //       'confirm_password': confirmPassword,
-  //       'class': selectedClasses
-  //     }),
-  //   );
-  //   try {
-  //     if (response.statusCode == 200) {
-  //       var respon = SignupModel.fromJson(jsonDecode(response.body));
-  //       //Setup Session
-  //       const storage = FlutterSecureStorage();
-  //       await storage.write(key: 'username', value: respon.username);
-  //       Navigator.of(context).pop();
-  //       //Next Page
-  //       ShowNotif.success(
-  //           message: 'Pendaftaran berhasil, silahkan aktivasi',
-  //           duration: 2500,
-  //           context: context);
-  //       Navigator.pushNamed(context, RouteNames.verificationCodeScreen,
-  //           arguments: email);
-  //       return respon;
-  //     } else if (response.statusCode == 201) {
-  //       var respon = SignupModel.fromJson(jsonDecode(response.body));
-  //       Navigator.of(context).pop();
-  //       ShowNotif.warning(
-  //           message: respon.metadata!.message ?? '', context: context);
-  //       return respon;
-  //     } else {
-  //       Navigator.of(context).pop();
-  //       ShowNotif.failed(
-  //           message: 'Terjadi kesalahan, harap coba lagi', context: context);
-  //       throw Exception('Failed to login.');
-  //     }
-  //   } catch (exc) {
-  //     Navigator.of(context).pop();
-  //     ShowNotif.failed(
-  //         message: 'Terjadi kesalahan, harap coba lagi', context: context);
-  //     throw Exception(exc);
-  //   }
-  // }
-
-  // Future<GetClasses> getAllClasses() async {
-  //   try {
-  //     final response = await http.get(Urls().getClasses());
-
-  //     if (response.statusCode == 200) {
-  //       return GetClasses.fromJson(json.decode(response.body));
-  //     } else {
-  //       throw Exception('Failed to load classes');
-  //     }
-  //   } catch (exc) {
-  //     throw Exception('Error fetching classes: ${exc.toString()}');
-  //   }
-  // }
 
   // Form
   final GlobalKey<FormState> _signupFormKey = GlobalKey<FormState>();
@@ -190,6 +150,24 @@ class _SignUpFormState extends State<SignUpForm> {
       }
     }
     return false;
+  }
+
+  Future<LoginResponse> register(RegisterRequest request) async {
+    final response = await http.post(
+      urls.signup(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return LoginResponse.fromJson(
+        jsonDecode(response.body),
+      );
+    }
+
+    throw Exception(response.body);
   }
 
   @override
@@ -246,6 +224,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             TextField(
+              controller: firstNameController,
               decoration: InputDecoration(
                 hintText: 'Nama lengkap',
                 prefixIcon: const Icon(Icons.person_outline),
@@ -265,6 +244,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 hintText: 'contoh@email.com',
                 prefixIcon: const Icon(Icons.email_outlined),
@@ -284,6 +264,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             TextField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Minimal 8 karakter',
@@ -305,6 +286,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             TextField(
+              controller: confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Ulangi kata sandi',
@@ -320,31 +302,39 @@ class _SignUpFormState extends State<SignUpForm> {
 
             // Tombol Daftar
             SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC6132C),
-                  elevation: 4,
-                  shadowColor: const Color(0xFFC6132C).withOpacity(0.4),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('Daftar',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward, color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      final request = RegisterRequest(
+                        firstName: firstNameController.text.trim(),
+                        lastName: lastNameController.text.trim(),
+                        email: emailController.text.trim(),
+                        username: usernameController.text.trim(),
+                        password: passwordController.text,
+                        confirmPassword: confirmPasswordController.text,
+                      );
+
+                      final result = await register(request);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            result.metadata?.message ?? 'Registrasi berhasil',
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Daftar'),
+                )),
             const SizedBox(height: 24),
 
             // Login Link
@@ -354,13 +344,13 @@ class _SignUpFormState extends State<SignUpForm> {
                 const Text('Sudah punya akun?'),
                 TextButton(
                     onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SigninForm(),
-          ),
-        );
-      },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SigninForm(),
+                        ),
+                      );
+                    },
                     child: const Text('Masuk',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -404,53 +394,4 @@ class _SignUpFormState extends State<SignUpForm> {
       ),
     );
   }
-
-  // Widget classOption(GetClasses data) {
-  //   return DropdownButtonHideUnderline(
-  //     child: DropdownButton2<String>(
-  //         isDense: true,
-  //         isExpanded: true,
-  //         hint: const Row(
-  //           children: [
-  //             Expanded(
-  //               child: Text(
-  //                 'Kelas',
-  //                 style: TextStyle(
-  //                   fontSize: 14,
-  //                   fontWeight: FontWeight.bold,
-  //                   color: Colors.grey,
-  //                 ),
-  //                 overflow: TextOverflow.ellipsis,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         items: data.data!
-  //             .map((item) => DropdownMenuItem<String>(
-  //                   value: "${item.className}",
-  //                   child: Text(
-  //                     "${item.className}",
-  //                     style: const TextStyle(
-  //                       fontSize: 15,
-  //                       fontWeight: FontWeight.bold,
-  //                       color: Color.fromARGB(255, 0, 0, 0),
-  //                     ),
-  //                     overflow: TextOverflow.ellipsis,
-  //                   ),
-  //                 ))
-  //             .toList(),
-  //         value: selectedClasses,
-  //         onChanged: (String? value) {
-  //           setState(() {
-  //             selectedClasses = value ?? '';
-  //           });
-  //         },
-  //         buttonStyleData: ButtonStyleData(
-  //             height: 40,
-  //             decoration: BoxDecoration(
-  //                 border: Border.all(
-  //                     color: const Color.fromARGB(255, 176, 206, 231)),
-  //                 borderRadius: BorderRadius.circular(5)))),
-  //   );
-  // }
 }

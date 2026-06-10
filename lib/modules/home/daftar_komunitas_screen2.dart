@@ -1,8 +1,10 @@
+import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
 import 'package:flutter/material.dart';
 import 'daftar_komunitas_screen3.dart'; // sesuaikan path import-nya
 
 class DaftarKomunitasScreen2 extends StatefulWidget {
-  const DaftarKomunitasScreen2({Key? key}) : super(key: key);
+  final DaftarOrganisasiDraft draft;
+  const DaftarKomunitasScreen2({Key? key, required this.draft}) : super(key: key);
 
   @override
   State<DaftarKomunitasScreen2> createState() => _DaftarKomunitasScreen2State();
@@ -172,9 +174,50 @@ class _DaftarKomunitasScreen2State extends State<DaftarKomunitasScreen2> {
                           elevation: 0,
                         ),
                         onPressed: () {
+                          final departemenData = _departemenList
+                              .where((item) =>
+                                  item['nama']!.text.trim().isNotEmpty ||
+                                  item['penjelasan']!.text.trim().isNotEmpty)
+                              .map((item) {
+                            return {
+                              "departemen": item['nama']!.text.trim(),
+                              "detail_departemen":
+                                  item['penjelasan']!.text.trim(),
+                              "is_active": true,
+                            };
+                          }).toList();
+
+                          final prestasiData = _prestasiList
+                              .where((item) =>
+                                  item['nama']!.text.trim().isNotEmpty ||
+                                  item['penjelasan']!.text.trim().isNotEmpty)
+                              .map((item) {
+                            return {
+                              "prestasi": item['nama']!.text.trim(),
+                              "detail_prestasi":
+                                  item['penjelasan']!.text.trim(),
+                              "is_active": true,
+                            };
+                          }).toList();
+
+                          String nomorWa = _whatsappController.text.trim();
+
+                          if (nomorWa.startsWith('0')) {
+                            nomorWa = nomorWa.substring(1);
+                          }
+
+                          final draftBaru = widget.draft.copyWith(
+                            wa: "62$nomorWa",
+                            email: _emailController.text.trim(),
+                            lokasi: _lokasiController.text.trim(),
+                            departemen: departemenData,
+                            prestasi: prestasiData,
+                          );
+
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const DaftarKomunitasScreen3(),
+                              builder: (_) =>
+                                  DaftarKomunitasScreen3(draft: draftBaru),
                             ),
                           );
                         },
