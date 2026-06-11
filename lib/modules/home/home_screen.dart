@@ -1,32 +1,18 @@
-import 'package:com.example.fincome_mobile_mobile/modules/home/modules/detailorg.dart';
-import 'package:dpad/dpad.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/model/jadwal_sholat_model.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
-import 'package:com.example.fincome_mobile_mobile/constants/text_styles.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/authentication/models/auth_model.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/model/discover_screen.dart';
-import 'package:com.example.fincome_mobile_mobile/widgets/CommunityCard.dart';
-import 'package:com.example.fincome_mobile_mobile/widgets/CategoryItem.dart';
-// Tambah import ini
-import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
-import 'package:com.example.fincome_mobile_mobile/utils/k_images.dart';
-import 'package:com.example.fincome_mobile_mobile/utils/utils.dart';
-import 'package:com.example.fincome_mobile_mobile/widgets/common_button.dart';
-import 'package:com.example.fincome_mobile_mobile/widgets/common_text_field_view.dart';
-import 'package:com.example.fincome_mobile_mobile/widgets/custom_image.dart';
-import '../../../core/router_name.dart';
-import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'package:com.example.fincome_mobile_mobile/service/detail_organisasi_service.dart';
+
+import 'package:com.example.fincome_mobile_mobile/core/router_name.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/detail_org.dart'
     as detail;
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/discover_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/modules/detailorg.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
+import 'package:com.example.fincome_mobile_mobile/service/detail_organisasi_service.dart';
+import 'package:com.example.fincome_mobile_mobile/widgets/CommunityCard.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, this.from = 'splash'}) : super(key: key);
@@ -225,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     // LIST HORIZONTAL SEMUA ORGANISASI
                     SizedBox(
-                      height: 286,
+                      height: 320,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -237,7 +223,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             padding: const EdgeInsets.only(right: 12),
                             child: CommunityCard(
                               image: _getOrganisasiImage(org),
-                              category: org.kategori?.category ?? 'Organisasi',
+                              category:
+                                  org.kategori?.category ?? 'Organisasi',
                               title: org.name ?? org.nama ?? '-',
                               description: org.tentangOrganisasi ??
                                   'Belum ada deskripsi organisasi.',
@@ -326,7 +313,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
             ),
           ),
+
           const SizedBox(width: 16),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +328,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 4),
+
                 Text(
                   org.name ?? org.nama ?? '-',
                   maxLines: 1,
@@ -349,7 +340,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontSize: 14,
                   ),
                 ),
+
                 const SizedBox(height: 2),
+
                 Text(
                   org.lokasi ?? 'Lokasi belum tersedia',
                   maxLines: 1,
@@ -362,6 +355,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
+
           const Icon(
             Icons.chevron_right,
             color: Colors.grey,
@@ -399,6 +393,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -436,7 +431,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+
       body: pages[_currentIndex],
+
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
