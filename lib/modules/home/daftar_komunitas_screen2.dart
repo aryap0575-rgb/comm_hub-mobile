@@ -1,17 +1,10 @@
-<<<<<<< HEAD
 import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
-=======
->>>>>>> 9f42fb3 (update)
 import 'package:flutter/material.dart';
 import 'daftar_komunitas_screen3.dart'; // sesuaikan path import-nya
 
 class DaftarKomunitasScreen2 extends StatefulWidget {
-<<<<<<< HEAD
   final DaftarOrganisasiDraft draft;
   const DaftarKomunitasScreen2({Key? key, required this.draft}) : super(key: key);
-=======
-  const DaftarKomunitasScreen2({Key? key}) : super(key: key);
->>>>>>> 9f42fb3 (update)
 
   @override
   State<DaftarKomunitasScreen2> createState() => _DaftarKomunitasScreen2State();
@@ -225,10 +218,6 @@ class _DaftarKomunitasScreen2State extends State<DaftarKomunitasScreen2> {
                             MaterialPageRoute(
                               builder: (_) =>
                                   DaftarKomunitasScreen3(draft: draftBaru),
-
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const DaftarKomunitasScreen3(),
                             ),
                           );
                         },

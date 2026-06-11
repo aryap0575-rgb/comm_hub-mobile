@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentication/models/daftar_organisasi_draft.dart';
@@ -11,19 +10,12 @@ class DaftarKomunitasScreen3 extends StatefulWidget {
   const DaftarKomunitasScreen3({Key? key, required this.draft})
       : super(key: key);
 
-import 'package:flutter/material.dart';
-
-class DaftarKomunitasScreen3 extends StatefulWidget {
-  const DaftarKomunitasScreen3({Key? key}) : super(key: key);
->>>>>>> 9f42fb3 (update)
-
   @override
   State<DaftarKomunitasScreen3> createState() => _DaftarKomunitasScreen3State();
 }
 
 class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
   // Simulasi list gambar yang sudah diupload (pakai index sebagai dummy)
-
   final List<File> _uploadedImages = [];
   final ImagePicker _picker = ImagePicker();
   int _selectedNavIndex = 2;
@@ -40,17 +32,6 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
         );
       });
     }
-
-  final List<String> _uploadedImages = [];
-  int _selectedNavIndex = 2;
-
-  void _addImage() {
-    // TODO: Integrasikan dengan image_picker package
-    // Contoh dummy — tambah placeholder
-    setState(() {
-      _uploadedImages.add('image_${_uploadedImages.length + 1}');
-    });
-
   }
 
   void _removeImage(int index) {
@@ -58,7 +39,6 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
       _uploadedImages.removeAt(index);
     });
   }
-
 
   Future<void> submitDaftarOrganisasi() async {
     try {
@@ -133,8 +113,6 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
       }
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -316,7 +294,6 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
                           ),
                           elevation: 0,
                         ),
-
                         onPressed: _isLoading
                             ? null
                             : () {
@@ -342,27 +319,6 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
                                       color: Colors.white, size: 20),
                                 ],
                               ),
-
-                        onPressed: () {
-                          // TODO: submit form pendaftaran komunitas
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              "Daftar Sekarang",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward,
-                                color: Colors.white, size: 20),
-                          ],
-                        ),
->>>>>>> 9f42fb3 (update)
                       ),
                     ),
 
@@ -448,18 +404,9 @@ class _DaftarKomunitasScreen3State extends State<DaftarKomunitasScreen3> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-
                     child: Image.file(
                       _uploadedImages[index],
                       fit: BoxFit.cover,
-
-                    child: Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        color: Colors.grey.shade400,
-                        size: 36,
-                      ),
-
                     ),
                   ),
                 ),
