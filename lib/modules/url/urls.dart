@@ -2,11 +2,9 @@ class Urls {
   // Local
 
   // final String mainUrl = 'http://192.168.102.101:8000';
-<<<<<<< HEAD
+
   final String mainUrl = 'http://192.168.1.2:8000';
-=======
-  final String mainUrl = 'http://192.168.100.8:8000';
->>>>>>> 9f42fb3 (update)
+
   // final String mainUrl = 'https://sipintar.silatama.co.id';
 
   late String media = '$mainUrl/static/media/';

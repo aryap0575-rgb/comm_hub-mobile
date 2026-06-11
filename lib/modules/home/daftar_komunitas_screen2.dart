@@ -181,7 +181,6 @@ class _DaftarKomunitasScreen2State extends State<DaftarKomunitasScreen2> {
                           elevation: 0,
                         ),
                         onPressed: () {
-<<<<<<< HEAD
                           final departemenData = _departemenList
                               .where((item) =>
                                   item['nama']!.text.trim().isNotEmpty ||
@@ -226,11 +225,10 @@ class _DaftarKomunitasScreen2State extends State<DaftarKomunitasScreen2> {
                             MaterialPageRoute(
                               builder: (_) =>
                                   DaftarKomunitasScreen3(draft: draftBaru),
-=======
+
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const DaftarKomunitasScreen3(),
->>>>>>> 9f42fb3 (update)
                             ),
                           );
                         },
