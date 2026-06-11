@@ -1,3 +1,4 @@
+import 'package:com.example.fincome_mobile_mobile/modules/home/modules/detailorg.dart';
 import 'package:dpad/dpad.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/jadwal_sholat_model.dart';
 import 'package:flutter/foundation.dart';
@@ -23,258 +24,348 @@ import 'package:com.example.fincome_mobile_mobile/widgets/custom_image.dart';
 import '../../../core/router_name.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/service/detail_organisasi_service.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/detail_org.dart'
+    as detail;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, this.from = 'splash'}) : super(key: key);
+
   final String? from;
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
+
   bool demoMode = true;
   int indexDemo = 0;
+
   InAppWebViewController? webViewController;
+
   bool isFridayOverrideActive = false;
   int progress = 0;
+
   Timer? prayerTimer;
   Set<String> triggeredToday = {};
+
   String url = "${Urls().wallpaper()}";
+
+  late Future<DetailOrg> _futureOrganisasi;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureOrganisasi = DetailOrganisasiService.getSemuaOrganisasi();
+  }
+
+  @override
+  void dispose() {
+    prayerTimer?.cancel();
+    super.dispose();
+  }
 
   void periodicReload() {
     Timer.periodic(const Duration(minutes: 10), (timer) {
-      webViewController!.reload();
+      if (webViewController != null) {
+        webViewController!.reload();
+      }
     });
   }
 
-  logoutProcess() async {
+  Future<void> logoutProcess() async {
     const storage = FlutterSecureStorage();
     await storage.deleteAll();
+
+    if (!mounted) return;
+
     Navigator.of(context).pushNamedAndRemoveUntil(
       RouteNames.signInScreen,
       (route) => false,
     );
   }
 
-  Future<void> checkJadwalSholat() async {
-    final response = await http.post(
-      Urls().synchJadwalSholat(),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8'
-      },
-      body: jsonEncode(<String, String>{}),
-    );
-    try {
-      if (response.statusCode == 200) {
-        var respon = JadwalSholat.fromJson(jsonDecode(response.body));
-        startPrayerScheduler(respon.jadwalSholat!, (mode) {
-          if (mode == "standby") {
-            webViewController?.loadUrl(
-              urlRequest:
-                  URLRequest(url: WebUri("${Urls().standbyWallpaper()}")),
-            );
-          } else {
-            webViewController?.loadUrl(
-              urlRequest: URLRequest(url: WebUri("${Urls().wallpaper()}")),
-            );
-          }
-        });
-      } else {
-        ShowNotif.failed(
-            duration: 3000, message: "Terjadi kesalahan", context: context);
-      }
-    } catch (exc) {
-      ShowNotif.failed(
-          message: 'Terjadi kesalahan, harap coba lagi', context: context);
-    }
-  }
-
-  void startPrayerScheduler(
-      String jadwalSholatJson, Function(String mode) callback) {
-    final Map<String, dynamic> jadwal = jsonDecode(jadwalSholatJson);
-    prayerTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      final now = DateTime.now();
-      if (isFridayOverrideActive) return;
-      if (now.hour == 0 && now.minute == 0) triggeredToday.clear();
-
-      void checkTrigger(
-          String name, String timeString, int offsetMinutes, String mode) {
-        final parts = timeString.split(":");
-        final target = DateTime(now.year, now.month, now.day,
-                int.parse(parts[0]), int.parse(parts[1]))
-            .add(Duration(minutes: offsetMinutes));
-        String key = "$name-${target.hour}:${target.minute}";
-        final difference = now.difference(target).abs().inMinutes;
-        if (difference <= 2 && !triggeredToday.contains(key)) {
-          triggeredToday.add(key);
-          callback(mode);
-        }
-      }
-
-      checkTrigger("isya+30", jadwal["isya"], 30, "standby");
-      checkTrigger("imsak-30", jadwal["imsak"], -30, "wallpaper");
-      checkTrigger("subuh+30", jadwal["subuh"], 30, "standby");
-      checkTrigger("dzuhur-30", jadwal["dzuhur"], -30, "wallpaper");
-      checkTrigger("ashar+30", jadwal["ashar"], 30, "standby");
-      checkTrigger("maghrib-30", jadwal["maghrib"], -30, "wallpaper");
+  Future<void> _refreshOrganisasi() async {
+    setState(() {
+      _futureOrganisasi = DetailOrganisasiService.getSemuaOrganisasi();
     });
+
+    await _futureOrganisasi;
   }
 
   Widget _buildHome() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Pencarian Cepat',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                fillColor: Colors.white,
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+    return RefreshIndicator(
+      onRefresh: _refreshOrganisasi,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SEARCH
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Pencarian Cepat',
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                  ),
+                  fillColor: Colors.white,
+                  filled: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Kategori Populer',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937))),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: const [
-                CategoryItem(
-                    icon: Icons.sports_soccer, label: 'HOBI &\nOLAHRAGA'),
-                CategoryItem(
-                    icon: Icons.school, label: 'PENDIDIKAN &\nKEPEMUDAAN'),
-                CategoryItem(
-                    icon: Icons.favorite, label: 'SOSIAL &\nKEMANUSIAAN'),
-                CategoryItem(icon: Icons.church, label: 'KEAGAMAAN'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Favorit Terbanyak',
+
+            const SizedBox(height: 8),
+
+            // TITLE SEMUA ORGANISASI
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Semua Organisasi',
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937))),
-                TextButton(
-                  onPressed: () => setState(() => _currentIndex = 1),
-                  child: const Text('Lihat Semua',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentIndex = 1;
+                      });
+                    },
+                    child: const Text(
+                      'Lihat Semua',
                       style: TextStyle(
-                          color: Color(0xFFC6132C),
-                          fontWeight: FontWeight.bold)),
-                ),
-              ],
+                        color: Color(0xFFC6132C),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // FUTURE BUILDER ORGANISASI
+            FutureBuilder<DetailOrg>(
+              future: _futureOrganisasi,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox(
+                    height: 320,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFC6132C),
+                      ),
+                    ),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Gagal mengambil data organisasi:\n${snapshot.error}',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 13,
+                      ),
+                    ),
+                  );
+                }
+
+                final organisasiList = snapshot.data?.data ?? [];
+
+                if (organisasiList.isEmpty) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Belum ada organisasi yang terdaftar.',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // LIST HORIZONTAL SEMUA ORGANISASI
+                    SizedBox(
+                      height: 286,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: organisasiList.length,
+                        itemBuilder: (context, index) {
+                          final org = organisasiList[index];
+
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: CommunityCard(
+                              image: _getOrganisasiImage(org),
+                              category: org.kategori?.category ?? 'Organisasi',
+                              title: org.name ?? org.nama ?? '-',
+                              description: org.tentangOrganisasi ??
+                                  'Belum ada deskripsi organisasi.',
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    // TITLE TERBARU BERGABUNG
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: Text(
+                        'Terbaru Bergabung',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                    ),
+
+                    // CARD TERBARU
+                    _buildTerbaruBergabung(organisasiList.first),
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getOrganisasiImage(org) {
+    final sampul = org.foto?.sampul ?? '';
+    final logo = org.foto?.logo ?? '';
+
+    if (sampul.isNotEmpty) {
+      return sampul;
+    }
+
+    if (logo.isNotEmpty) {
+      return logo;
+    }
+
+    return 'https://picsum.photos/seed/organisasi/400/200';
+  }
+
+  Widget _buildTerbaruBergabung(org) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              _getOrganisasiImage(org),
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 60,
+                  height: 60,
+                  color: Colors.grey.shade200,
+                  child: const Icon(
+                    Icons.groups,
+                    color: Color(0xFFC6132C),
+                  ),
+                );
+              },
             ),
           ),
-          SizedBox(
-            height: 320,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: const [
-                CommunityCard(
-                  image: 'https://picsum.photos/seed/masjid/400/200',
-                  category: 'Keagamaan',
-                  title: 'UKM AL-IZZAH UNIVERSITAS MULIA',
-                  description:
-                      'Membangun generasi cerdas melalui program mentoring dan pengembangan diri yang berkelanjutan...',
-                ),
-                CommunityCard(
-                  image: 'https://picsum.photos/seed/sosial/400/200',
-                  category: 'Sosial',
-                  title: 'HIMPUNAN MAHASISWA SOSIAL',
-                  description:
-                      'Pusat kolaborasi untuk membantu sesama dan mengembangkan jiwa sosial kemanusiaan...',
-                ),
-              ],
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text('Terbaru Bergabung',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937))),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4)),
-              ],
-            ),
-            child: Row(
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    'https://picsum.photos/seed/basket/200/200',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
+                Text(
+                  (org.kategori?.category ?? 'ORGANISASI').toUpperCase(),
+                  style: const TextStyle(
+                    color: Color(0xFFC6132C),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('KEAGAMAAN',
-                          style: TextStyle(
-                              color: Color(0xFFC6132C),
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold)),
-                      SizedBox(height: 4),
-                      Text('UKM Al-Izzah Universitas Mulia',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14)),
-                      SizedBox(height: 2),
-                      Text('2 jam yang lalu',
-                          style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    ],
+                const SizedBox(height: 4),
+                Text(
+                  org.name ?? org.nama ?? '-',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Colors.grey),
+                const SizedBox(height: 2),
+                Text(
+                  org.lokasi ?? 'Lokasi belum tersedia',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 100),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.grey,
+          ),
         ],
       ),
     );
@@ -299,7 +390,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _buildAccount(),
     ];
 
-    final List<String> titles = ['COMM.HUB', 'COMM.HUB  ', 'Saved', 'Account'];
+    final List<String> titles = [
+      'COMM.HUB',
+      'COMM.HUB  ',
+      'Saved',
+      'Account',
+    ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -313,7 +409,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               color: const Color(0xFFC6132C),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.groups, color: Colors.white),
+            child: const Icon(
+              Icons.groups,
+              color: Colors.white,
+            ),
           ),
         ),
         title: Text(
@@ -331,7 +430,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: CircleAvatar(
               radius: 18,
               backgroundImage: NetworkImage(
-                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100'),
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+              ),
             ),
           ),
         ],
@@ -340,7 +440,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+            ),
           ],
         ),
         child: BottomNavigationBar(
@@ -349,15 +452,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           unselectedItemColor: Colors.grey,
           currentIndex: _currentIndex,
           backgroundColor: Colors.white,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined), label: 'Discover'),
+              icon: Icon(Icons.home),
+              label: 'Beranda',
+            ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.bookmark_outline), label: 'Saved'),
+              icon: Icon(Icons.explore_outlined),
+              label: 'Discover',
+            ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'Account'),
+              icon: Icon(Icons.bookmark_outline),
+              label: 'Saved',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: 'Account',
+            ),
           ],
         ),
       ),
