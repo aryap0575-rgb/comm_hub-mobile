@@ -6,7 +6,7 @@ import 'package:com.example.fincome_mobile_mobile/modules/home/model/detail_org.
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/organisasi_list_model.dart';
 
 class DetailOrganisasiService {
-  static const String baseUrl = 'http://192.168.1.10:8000';
+  static const String baseUrl = 'http://192.168.1.2:8000';
 
   static Future<OrganisasiListResponse> getSemuaOrganisasi() async {
     final Uri url = Uri.parse('$baseUrl/mobile/organisasi/');

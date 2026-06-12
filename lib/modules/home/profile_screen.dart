@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:com.example.fincome_mobile_mobile/modules/home/daftar_komunitas_screen.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/daftar_komunitas_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onLogout;
@@ -21,8 +23,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late Future<ProfileUserResponse> _futureProfile;
 
-  // GANTI IP INI SESUAI IP LAPTOP KAMU
-  static const String baseUrl = 'http://192.168.1.10:8000';
+  bool _isUploadingPhoto = false;
 
   @override
   void initState() {
@@ -39,7 +40,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       throw Exception('User ID tidak ditemukan. Silakan login ulang.');
     }
 
-    // SESUAIKAN ENDPOINT INI DENGAN API PROFILE KAMU
     final url = Urls().profileUser(int.parse(userIdString));
 
     final response = await http.get(
@@ -103,6 +103,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return 'Email belum tersedia';
   }
 
+  String _getProfilePhoto(ProfileUserResponse profile) {
+    final photo = profile.data?.photo?.photo ?? '';
+
+    if (photo.isNotEmpty) {
+      return photo;
+    }
+
+    return 'https://i.pravatar.cc/300';
+  }
+
+  Future<void> _pickAndUploadPhoto() async {
+    try {
+      final picker = ImagePicker();
+
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (pickedFile == null) {
+        return;
+      }
+
+      await _uploadProfilePhoto(File(pickedFile.path));
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memilih foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadProfilePhoto(File imageFile) async {
+    const storage = FlutterSecureStorage();
+
+    final userIdString = await storage.read(key: 'user_id');
+
+    if (userIdString == null || userIdString.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User ID tidak ditemukan. Silakan login ulang.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploadingPhoto = true;
+    });
+
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Urls().updateProfilePhoto(int.parse(userIdString)),
+      );
+
+      request.fields['user_id'] = userIdString;
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'photo',
+          imageFile.path,
+        ),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('STATUS UPDATE PHOTO: ${response.statusCode}');
+      print('BODY UPDATE PHOTO: ${response.body}');
+
+      if (!response.body.trim().startsWith('{')) {
+        throw Exception('API update photo tidak mengembalikan JSON');
+      }
+
+      final body = jsonDecode(response.body);
+      final metadata = body['metadata'];
+      final code =
+          metadata?['code'] ?? metadata?['status'] ?? response.statusCode;
+
+      final bool sukses = response.statusCode == 200 &&
+          (code == 200 || code.toString() == '200');
+
+      if (!sukses) {
+        throw Exception(metadata?['message'] ?? 'Gagal update foto profile');
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto profile berhasil diperbarui'),
+          backgroundColor: Color(0xFFD90429),
+        ),
+      );
+
+      await _refreshProfile();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal update foto profile: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingPhoto = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -146,6 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final profile = snapshot.data ?? ProfileUserResponse();
           final name = _getDisplayName(profile);
           final email = _getEmail(profile);
+          final profilePhoto = _getProfilePhoto(profile);
 
           final totalOrganisasiFavorit =
               profile.data?.totalOrganisasiFavorit ?? 0;
@@ -169,30 +290,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 3,
                         ),
                       ),
-                      child: const CircleAvatar(
-                        radius: 45,
-                        backgroundImage: NetworkImage(
-                          "https://i.pravatar.cc/300",
+                      child: GestureDetector(
+                        onTap: _isUploadingPhoto ? null : _pickAndUploadPhoto,
+                        child: CircleAvatar(
+                          radius: 45,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: NetworkImage(profilePhoto),
+                          child: _isUploadingPhoto
+                              ? Container(
+                                  width: 90,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.35),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD90429),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
+                      child: GestureDetector(
+                        onTap: _isUploadingPhoto ? null : _pickAndUploadPhoto,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD90429),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          size: 16,
-                          color: Colors.white,
+                          child: const Icon(
+                            Icons.edit,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -201,7 +343,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 20),
 
-                // NAME DARI API
                 Text(
                   name.toUpperCase(),
                   textAlign: TextAlign.center,
@@ -213,7 +354,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 6),
 
-                // EMAIL DARI API
                 Text(
                   email,
                   textAlign: TextAlign.center,
@@ -229,7 +369,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 30),
 
-                // SAVED COMMUNITY CARD
                 _buildMenuCard(
                   icon: Icons.bookmark_border,
                   title: "Komunitas Tersimpan",
@@ -250,7 +389,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 16),
 
-                // REGISTER CARD
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
@@ -311,7 +449,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 18),
 
-                // HELP CARD
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
@@ -494,6 +631,7 @@ class ProfileUserResponse {
 class ProfileData {
   User? user;
   Profile? profile;
+  PhotoProfile? photo;
   int? totalProfile;
   int? totalPhoto;
   int? totalOrganisasiFavorit;
@@ -501,6 +639,7 @@ class ProfileData {
   ProfileData({
     this.user,
     this.profile,
+    this.photo,
     this.totalProfile,
     this.totalPhoto,
     this.totalOrganisasiFavorit,
@@ -510,6 +649,7 @@ class ProfileData {
     user = json['user'] != null ? User.fromJson(json['user']) : null;
     profile =
         json['profile'] != null ? Profile.fromJson(json['profile']) : null;
+    photo = json['photo'] != null ? PhotoProfile.fromJson(json['photo']) : null;
 
     totalProfile = json['total_profile'];
     totalPhoto = json['total_photo'];
@@ -525,6 +665,10 @@ class ProfileData {
 
     if (profile != null) {
       data['profile'] = profile!.toJson();
+    }
+
+    if (photo != null) {
+      data['photo'] = photo!.toJson();
     }
 
     data['total_profile'] = totalProfile;
@@ -662,6 +806,44 @@ class Profile {
     data['phone_no'] = phoneNo;
     data['creation_date'] = creationDate;
     data['update_date'] = updateDate;
+
+    return data;
+  }
+}
+
+class PhotoProfile {
+  int? id;
+  String? photo;
+  String? foto;
+  String? avatar;
+  String? image;
+
+  PhotoProfile({
+    this.id,
+    this.photo,
+    this.foto,
+    this.avatar,
+    this.image,
+  });
+
+  PhotoProfile.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    photo = json['photo'];
+    foto = json['foto'];
+    avatar = json['avatar'];
+    image = json['image'];
+
+    photo ??= foto ?? avatar ?? image;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+
+    data['id'] = id;
+    data['photo'] = photo;
+    data['foto'] = foto;
+    data['avatar'] = avatar;
+    data['image'] = image;
 
     return data;
   }

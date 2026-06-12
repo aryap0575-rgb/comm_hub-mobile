@@ -1,3 +1,3 @@
 class Kstrings {
-  static const String appName = "E-Masjid";
+  static const String appName = "COMM_HUB";
 }

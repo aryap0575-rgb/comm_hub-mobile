@@ -2,7 +2,7 @@ class Urls {
   // Local
 
   // final String mainUrl = 'http://192.168.102.101:8000';
-  final String mainUrl = 'http://192.168.1.10:8000';
+  final String mainUrl = 'http://192.168.1.2:8000';
   // final String mainUrl = 'https://sipintar.silatama.co.id';
 
   late String media = '$mainUrl/static/media/';
@@ -43,4 +43,6 @@ class Urls {
   Uri favoritOrganisasi() => Uri.parse('$mainUrl/mobile/organisasi/favorit/');
   Uri favoritOrganisasiByUser(int userId) =>
       Uri.parse('$mainUrl/mobile/organisasi/favorit/user/$userId/');
+  Uri updateProfilePhoto(int userId) =>
+      Uri.parse('$mainUrl/mobile/profile/photo/$userId/');
 }

@@ -10,7 +10,8 @@ import 'package:com.example.fincome_mobile_mobile/modules/home/modules/authentic
 class OrganisasiService {
   // GANTI IP INI DENGAN IP LAPTOP KAMU
   // Jangan pakai localhost kalau jalan di HP fisik
-  static const String _url = 'http://192.168.1.10:8000/mobile/daftar/organisasi/';
+  static const String _url =
+      'http://192.168.1.2:8000/mobile/daftar/organisasi/';
 
   static Future<DaftarOrg> daftarOrganisasi({
     required String namaOrganisasi,

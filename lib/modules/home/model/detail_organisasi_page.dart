@@ -11,6 +11,7 @@ class DetailOrganisasiPage extends StatefulWidget {
   final String? visi;
   final String? misi;
   final String? imageUrl;
+  final String? logoUrl;
 
   const DetailOrganisasiPage({
     Key? key,
@@ -21,6 +22,7 @@ class DetailOrganisasiPage extends StatefulWidget {
     this.visi,
     this.misi,
     this.imageUrl,
+    this.logoUrl,
   }) : super(key: key);
 
   @override
@@ -81,7 +83,7 @@ class _DetailOrganisasiPageState extends State<DetailOrganisasiPage> {
           ),
           const SizedBox(width: 8),
           const Text(
-            "Detail Organisasi",
+            "Detail Organisasiex",
             style: TextStyle(
               color: primaryRed,
               fontSize: 18,
@@ -106,12 +108,12 @@ class _DetailOrganisasiPageState extends State<DetailOrganisasiPage> {
                 ),
               ],
             ),
-            child: ClipOval(
-              child: Image.network(
-                "https://i.pravatar.cc/150?img=12",
-                fit: BoxFit.cover,
-                errorBuilder: _functionImageError,
-              ),
+            child: Image.network(
+              widget.logoUrl?.isNotEmpty == true
+                  ? widget.logoUrl!
+                  : "https://i.pravatar.cc/150?img=12",
+              fit: BoxFit.cover,
+              errorBuilder: _functionImageError,
             ),
           ),
         ],
