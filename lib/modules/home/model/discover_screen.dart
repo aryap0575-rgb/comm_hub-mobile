@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/service/favorite_organisasi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,8 +19,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   late Future<DiscoverOrg> _futureDiscoverOrg;
 
   // GANTI IP INI SESUAI IP LAPTOP KAMU
-  // Kalau pakai HP fisik, jangan pakai localhost.
-  static const String baseUrl = 'http://192.168.1.2:8000';
+  static String get baseUrl => FavoriteOrganisasiService.baseUrl;
+
+  // Untuk menandai icon bookmark yang sudah diklik di halaman Discover
+  final Set<int> _savedOrgIds = {};
+
+  // Untuk loading kecil saat klik bookmark
+  final Set<int> _loadingFavoriteIds = {};
 
   final List<String> categories = [
     'Semua',
@@ -75,6 +81,72 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     await _futureDiscoverOrg;
   }
 
+  Future<void> _toggleFavorite(Data item) async {
+    final organisasiId = item.id;
+
+    if (organisasiId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID organisasi tidak ditemukan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final bool sekarangSudahFavorit = _savedOrgIds.contains(organisasiId);
+    final bool targetFavorit = !sekarangSudahFavorit;
+
+    setState(() {
+      _loadingFavoriteIds.add(organisasiId);
+    });
+
+    try {
+      final result = await FavoriteOrganisasiService.setFavorite(
+        organisasiId: organisasiId,
+        isFavorit: targetFavorit,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        if (targetFavorit) {
+          _savedOrgIds.add(organisasiId);
+        } else {
+          _savedOrgIds.remove(organisasiId);
+        }
+
+        _loadingFavoriteIds.remove(organisasiId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['metadata']?['message'] ??
+                (targetFavorit
+                    ? 'Organisasi berhasil disimpan ke favorit'
+                    : 'Organisasi berhasil dihapus dari favorit'),
+          ),
+          backgroundColor: const Color(0xFFD90429),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _loadingFavoriteIds.remove(organisasiId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengubah favorit: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   List<Data> _filterOrganisasi(List<Data> list) {
     final keyword = _searchController.text.trim().toLowerCase();
 
@@ -105,8 +177,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       return false;
     }
 
-    // Biar kategori dari DB seperti "Sosial", "Pendidikan", "Agama"
-    // tetap cocok dengan chip seperti "Sosial & Kemanusiaan".
     if (selected.contains(kategoriApi)) {
       return true;
     }
@@ -357,10 +427,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               itemCount: filteredOrganisasi.length,
                               itemBuilder: (context, index) {
                                 final item = filteredOrganisasi[index];
+                                final orgId = item.id;
 
                                 return _CommunityListCard(
                                   item: item,
                                   image: _getImage(item),
+                                  isSaved: orgId != null &&
+                                      _savedOrgIds.contains(orgId),
+                                  isLoading: orgId != null &&
+                                      _loadingFavoriteIds.contains(orgId),
+                                  onFavoriteTap: () {
+                                    _toggleFavorite(item);
+                                  },
                                 );
                               },
                             ),
@@ -379,10 +457,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 class _CommunityListCard extends StatelessWidget {
   final Data item;
   final String image;
+  final bool isSaved;
+  final bool isLoading;
+  final VoidCallback onFavoriteTap;
 
   const _CommunityListCard({
     required this.item,
     required this.image,
+    required this.isSaved,
+    required this.isLoading,
+    required this.onFavoriteTap,
   });
 
   @override
@@ -515,19 +599,35 @@ class _CommunityListCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Icon(
-                      Icons.bookmark_border,
-                      size: 20,
-                      color: Colors.grey,
+                    InkWell(
+                      onTap: isLoading ? null : onFavoriteTap,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFFC6132C),
+                                ),
+                              )
+                            : Icon(
+                                isSaved
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                size: 22,
+                                color: isSaved
+                                    ? const Color(0xFFC6132C)
+                                    : Colors.grey,
+                              ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () {
                         print('ID Organisasi: ${item.id}');
-                        // Nanti kalau sudah ada halaman detail:
-                        // Navigator.push(context, MaterialPageRoute(
-                        //   builder: (_) => DetailOrganisasiScreen(id: item.id!),
-                        // ));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFC6132C),
@@ -577,18 +677,22 @@ class DiscoverOrg {
         data!.add(Data.fromJson(v));
       });
     }
+
     metadata =
         json['metadata'] != null ? Metadata.fromJson(json['metadata']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
+
     if (metadata != null) {
       data['metadata'] = metadata!.toJson();
     }
+
     return data;
   }
 }
@@ -633,16 +737,21 @@ class Data {
     email = json['email'];
     lokasi = json['lokasi'];
     isActive = json['is_active'];
+
     kategori =
         json['kategori'] != null ? Kategori.fromJson(json['kategori']) : null;
+
     user = json['user'] != null ? User.fromJson(json['user']) : null;
+
     foto = json['foto'] != null ? Foto.fromJson(json['foto']) : null;
+
     creationDate = json['creation_date'];
     updateDate = json['update_date'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['id'] = id;
     data['name'] = name;
     data['nama'] = nama;
@@ -651,17 +760,22 @@ class Data {
     data['email'] = email;
     data['lokasi'] = lokasi;
     data['is_active'] = isActive;
+
     if (kategori != null) {
       data['kategori'] = kategori!.toJson();
     }
+
     if (user != null) {
       data['user'] = user!.toJson();
     }
+
     if (foto != null) {
       data['foto'] = foto!.toJson();
     }
+
     data['creation_date'] = creationDate;
     data['update_date'] = updateDate;
+
     return data;
   }
 }

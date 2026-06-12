@@ -17,6 +17,7 @@ class Urls {
   Uri userlogout() => Uri.parse('$mainUrl/mobile/user_logout/');
   Uri usercreateLock() => Uri.parse('$mainUrl/mobile/user_create_lock/');
   Uri getProfile() => Uri.parse('$mainUrl/mobile/get/profile/');
+  Uri profileUser(int userId) => Uri.parse('$mainUrl/mobile/profile/$userId/');
   Uri updateProfile() => Uri.parse('$mainUrl/mobile/update/profile/');
   Uri updatePhoto() => Uri.parse('$mainUrl/mobile/update/photo/');
   Uri checkLock() => Uri.parse('$mainUrl/mobile/user_check_lock/');
@@ -39,4 +40,7 @@ class Urls {
   Uri daftarKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/daftar/');
   Uri simpanKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/simpan/');
   Uri tersimpanKomunitas() => Uri.parse('$mainUrl/mobile/komunitas/tersimpan/');
+  Uri favoritOrganisasi() => Uri.parse('$mainUrl/mobile/organisasi/favorit/');
+  Uri favoritOrganisasiByUser(int userId) =>
+      Uri.parse('$mainUrl/mobile/organisasi/favorit/user/$userId/');
 }

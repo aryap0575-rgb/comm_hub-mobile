@@ -9,6 +9,7 @@ import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.da
 import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
 import 'package:com.example.fincome_mobile_mobile/service/detail_organisasi_service.dart';
+import 'package:com.example.fincome_mobile_mobile/service/favorite_organisasi_service.dart';
 import 'package:com.example.fincome_mobile_mobile/widgets/CommunityCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -25,6 +26,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
+
+  final Set<int> _savedOrgIds = {};
+  final Set<int> _loadingFavoriteIds = {};
 
   bool demoMode = true;
   int indexDemo = 0;
@@ -45,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _futureOrganisasi = DetailOrganisasiService.getSemuaOrganisasi();
+    _syncFavoriteIds();
   }
 
   @override
@@ -73,12 +78,116 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> _syncFavoriteIds() async {
+    try {
+      final favoriteIds = await FavoriteOrganisasiService.getFavoriteIds();
+
+      if (!mounted) return;
+
+      setState(() {
+        _savedOrgIds
+          ..clear()
+          ..addAll(favoriteIds);
+      });
+
+      print('SYNC FAVORITE IDS: $_savedOrgIds');
+    } catch (e) {
+      print('Gagal sync favorite ids: $e');
+    }
+  }
+
   Future<void> _refreshOrganisasi() async {
     setState(() {
       _futureOrganisasi = DetailOrganisasiService.getSemuaOrganisasi();
     });
 
-    await _futureOrganisasi;
+    await Future.wait([
+      _futureOrganisasi,
+      _syncFavoriteIds(),
+    ]);
+  }
+
+  Future<void> _toggleFavorite(int? organisasiId) async {
+    if (organisasiId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID organisasi tidak ditemukan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final bool sekarangSudahFavorit = _savedOrgIds.contains(organisasiId);
+    final bool targetFavorit = !sekarangSudahFavorit;
+
+    setState(() {
+      _loadingFavoriteIds.add(organisasiId);
+    });
+
+    try {
+      final result = await FavoriteOrganisasiService.setFavorite(
+        organisasiId: organisasiId,
+        isFavorit: targetFavorit,
+      );
+
+      await _syncFavoriteIds();
+
+      if (!mounted) return;
+
+      setState(() {
+        _loadingFavoriteIds.remove(organisasiId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['metadata']?['message'] ??
+                (targetFavorit
+                    ? 'Organisasi berhasil disimpan ke favorit'
+                    : 'Organisasi berhasil dihapus dari favorit'),
+          ),
+          backgroundColor: const Color(0xFFD90429),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _loadingFavoriteIds.remove(organisasiId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengubah favorit: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _openDetailOrganisasi(org) {
+    final int? organisasiId = org.id;
+
+    if (organisasiId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID organisasi tidak ditemukan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    print('Klik detail organisasi ID: $organisasiId');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => org(id: organisasiId),
+      ),
+    );
   }
 
   Widget _buildHome() {
@@ -211,23 +320,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     // LIST HORIZONTAL SEMUA ORGANISASI
                     SizedBox(
-                      height: 320,
+                      height: 285,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: organisasiList.length,
                         itemBuilder: (context, index) {
                           final org = organisasiList[index];
+                          final int? orgId = org.id;
 
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: CommunityCard(
                               image: _getOrganisasiImage(org),
-                              category:
-                                  org.kategori?.category ?? 'Organisasi',
+                              category: org.kategori?.category ?? 'Organisasi',
                               title: org.name ?? org.nama ?? '-',
                               description: org.tentangOrganisasi ??
                                   'Belum ada deskripsi organisasi.',
+                              isSaved:
+                                  orgId != null && _savedOrgIds.contains(orgId),
+                              isLoading: orgId != null &&
+                                  _loadingFavoriteIds.contains(orgId),
+                              onSaveTap: () {
+                                _toggleFavorite(org.id);
+                              },
+                              onDetailTap: () {
+                                _openDetailOrganisasi(org);
+                              },
                             ),
                           );
                         },
@@ -277,90 +396,89 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTerbaruBergabung(org) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              _getOrganisasiImage(org),
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey.shade200,
-                  child: const Icon(
-                    Icons.groups,
-                    color: Color(0xFFC6132C),
-                  ),
-                );
-              },
+    return InkWell(
+      onTap: () {
+        _openDetailOrganisasi(org);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  (org.kategori?.category ?? 'ORGANISASI').toUpperCase(),
-                  style: const TextStyle(
-                    color: Color(0xFFC6132C),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  org.name ?? org.nama ?? '-',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  org.lokasi ?? 'Lokasi belum tersedia',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                _getOrganisasiImage(org),
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey.shade200,
+                    child: const Icon(
+                      Icons.groups,
+                      color: Color(0xFFC6132C),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (org.kategori?.category ?? 'ORGANISASI').toUpperCase(),
+                    style: const TextStyle(
+                      color: Color(0xFFC6132C),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    org.name ?? org.nama ?? '-',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    org.lokasi ?? 'Lokasi belum tersedia',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -393,7 +511,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -431,9 +548,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-
       body: pages[_currentIndex],
-
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -449,10 +564,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           unselectedItemColor: Colors.grey,
           currentIndex: _currentIndex,
           backgroundColor: Colors.white,
-          onTap: (index) {
+          onTap: (index) async {
             setState(() {
               _currentIndex = index;
             });
+
+            // Saat balik ke Beranda, status bookmark disinkronkan lagi.
+            if (index == 0) {
+              await _syncFavoriteIds();
+            }
+
+            // Saat masuk Saved lalu balik, data Home tetap bisa sinkron.
+            if (index == 2) {
+              await _syncFavoriteIds();
+            }
           },
           items: const [
             BottomNavigationBarItem(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/service/favorite_organisasi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -14,8 +15,7 @@ class SavedScreen extends StatefulWidget {
 class _SavedScreenState extends State<SavedScreen> {
   late Future<FavoriteOrgResponse> _futureFavorite;
 
-  // GANTI IP INI SESUAI IP LAPTOP KAMU
-  static const String baseUrl = 'http://192.168.1.2:8000';
+  static String get baseUrl => FavoriteOrganisasiService.baseUrl;
 
   @override
   void initState() {
@@ -66,20 +66,6 @@ class _SavedScreenState extends State<SavedScreen> {
   }
 
   Future<void> _hapusFavorite(FavoriteData item) async {
-    const storage = FlutterSecureStorage();
-
-    final userIdString = await storage.read(key: 'user_id');
-
-    if (userIdString == null || userIdString.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User ID tidak ditemukan. Silakan login ulang.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     final organisasiId = item.id;
 
     if (organisasiId == null) {
@@ -93,55 +79,25 @@ class _SavedScreenState extends State<SavedScreen> {
     }
 
     try {
-      final url = Uri.parse('$baseUrl/mobile/organisasi/favorit/');
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'organisasi_id': organisasiId,
-          'user_id': int.parse(userIdString),
-          'is_favorit': false,
-        }),
+      final result = await FavoriteOrganisasiService.setFavorite(
+        organisasiId: organisasiId,
+        isFavorit: false,
       );
 
-      print('STATUS HAPUS FAVORIT: ${response.statusCode}');
-      print('BODY HAPUS FAVORIT: ${response.body}');
+      if (!mounted) return;
 
-      if (!response.body.trim().startsWith('{')) {
-        throw Exception('API hapus favorit tidak mengembalikan JSON');
-      }
-
-      final body = jsonDecode(response.body);
-      final code = body['metadata']?['code'];
-
-      if (code == 200 || code == 201) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Organisasi dihapus dari favorit'),
-            backgroundColor: Color(0xFFD90429),
-            duration: Duration(seconds: 1),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['metadata']?['message'] ??
+                'Organisasi berhasil dihapus dari favorit',
           ),
-        );
+          backgroundColor: const Color(0xFFD90429),
+          duration: const Duration(seconds: 1),
+        ),
+      );
 
-        _refreshFavorite();
-      } else {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              body['metadata']?['message'] ?? 'Gagal menghapus favorit',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _refreshFavorite();
     } catch (e) {
       if (!mounted) return;
 

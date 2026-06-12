@@ -1,73 +1,83 @@
 class AuthModel {
-  String? status;
-  String? message;
+  int? userId;
+  String? username;
   String? token;
-  User? user;
+  Metadata? metadata;
+  String? message;
 
   AuthModel({
-    this.status,
-    this.message,
+    this.userId,
+    this.username,
     this.token,
-    this.user,
+    this.metadata,
+    this.message,
   });
 
   AuthModel.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    message = json['message'];
-    token = json['token'];
-    user = json['user'] != null
-        ? User.fromJson(json['user'])
-        : null;
+    final rawUserId = json['user_id'];
+
+    if (rawUserId is int) {
+      userId = rawUserId;
+    } else if (rawUserId != null) {
+      userId = int.tryParse(rawUserId.toString());
+    } else {
+      userId = null;
+    }
+
+    username = json['username']?.toString();
+    token = json['token']?.toString();
+
+    metadata =
+        json['metadata'] != null ? Metadata.fromJson(json['metadata']) : null;
+
+    message = json['message']?.toString() ?? metadata?.message;
   }
 
-  get username => null;
-
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = <String, dynamic>{};
 
-    data['status'] = status;
-    data['message'] = message;
+    data['user_id'] = userId;
+    data['username'] = username;
     data['token'] = token;
 
-    if (user != null) {
-      data['user'] = user!.toJson();
+    if (metadata != null) {
+      data['metadata'] = metadata!.toJson();
     }
+
+    data['message'] = message;
 
     return data;
   }
 }
 
-class User {
-  int? id;
-  String? username;
-  String? email;
-  String? fullname;
-  String? photo;
+class Metadata {
+  int? code;
+  String? message;
 
-  User({
-    this.id,
-    this.username,
-    this.email,
-    this.fullname,
-    this.photo,
+  Metadata({
+    this.code,
+    this.message,
   });
 
-  User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    username = json['username'];
-    email = json['email'];
-    fullname = json['fullname'];
-    photo = json['photo'];
+  Metadata.fromJson(Map<String, dynamic> json) {
+    final rawCode = json['code'];
+
+    if (rawCode is int) {
+      code = rawCode;
+    } else if (rawCode != null) {
+      code = int.tryParse(rawCode.toString());
+    } else {
+      code = null;
+    }
+
+    message = json['message']?.toString();
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = <String, dynamic>{};
 
-    data['id'] = id;
-    data['username'] = username;
-    data['email'] = email;
-    data['fullname'] = fullname;
-    data['photo'] = photo;
+    data['code'] = code;
+    data['message'] = message;
 
     return data;
   }
