@@ -1,4 +1,5 @@
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/departmen_page.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/prestasi_page.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -334,18 +335,14 @@ class _DetailOrganisasiPageState extends State<DetailOrganisasiPage> {
                         title: 'Prestasi',
                         total: data?.totalPrestasi ?? 0,
                         onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(18),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PrestasiPage(
+                                organisasiId: widget.organisasiId,
+                                namaOrganisasi: namaOrganisasi,
                               ),
                             ),
-                            builder: (context) {
-                              return PrestasiBottomSheet(
-                                prestasi: data?.prestasi ?? [],
-                              );
-                            },
                           );
                         },
                       ),

@@ -1,127 +1,495 @@
 import 'package:flutter/material.dart';
 
-class DetailOrganisasiPage extends StatelessWidget {
-  const DetailOrganisasiPage({Key? key}) : super(key: key);
+import 'prestasi_page.dart';
+import 'departmen_page.dart';
 
-  static const String headerImage =
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c';
+class DetailOrganisasiPage extends StatefulWidget {
+  final int organisasiId;
+  final String namaOrganisasi;
+  final String? kategori;
+  final String? tentangOrganisasi;
+  final String? visi;
+  final String? misi;
+  final String? imageUrl;
 
-  static const String logoImage =
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac';
+  const DetailOrganisasiPage({
+    Key? key,
+    required this.organisasiId,
+    required this.namaOrganisasi,
+    this.kategori,
+    this.tentangOrganisasi,
+    this.visi,
+    this.misi,
+    this.imageUrl,
+  }) : super(key: key);
 
-  static const List<String> galleryImages = [
-    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac',
-    'https://images.unsplash.com/photo-1501004318641-b39e6451bec6',
-    'https://images.unsplash.com/photo-1517048676732-d65bc937f952',
-  ];
+  @override
+  State<DetailOrganisasiPage> createState() => _DetailOrganisasiPageState();
+}
 
+class _DetailOrganisasiPageState extends State<DetailOrganisasiPage> {
   static const Color primaryRed = Color(0xFFD90429);
-  static const Color softBg = Color(0xFFF8F7FC);
-  static const Color greenWa = Color(0xFF139B8F);
+  static const Color softRed = Color(0xFFFFF1F1);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: softBg,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: primaryRed,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          'Detail Organisasi',
-          style: TextStyle(
-            color: primaryRed,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
-          child: SizedBox(
-            height: 52,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: greenWa,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                // TODO: arahkan ke WhatsApp
-              },
-              icon: const Icon(
-                Icons.chat_bubble_outline,
-                size: 18,
-              ),
-              label: const Text(
-                'Hubungi Via WhatsApp',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
+      backgroundColor: const Color(0xFFFAFAFA),
+      body: SafeArea(
         child: Column(
           children: [
-            const HeaderSection(
-              headerImage: headerImage,
-              logoImage: logoImage,
-            ),
-            const SizedBox(height: 18),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  SectionTitle(
-                    icon: Icons.info_outline,
-                    title: 'Tentang Kami',
-                  ),
-                  SizedBox(height: 10),
-                  TextCard(
-                    text:
-                        'Yayasan Balikpapan Hijau adalah inisiatif komunitas yang berdedikasi untuk menjaga kelestarian ekosistem pesisir dan hutan kota di Balikpapan. Berdiri sejak tahun 2015, kami telah melibatkan lebih dari 5.000 relawan lokal dalam berbagai program reboisasi dan edukasi lingkungan.',
-                  ),
-                  SizedBox(height: 18),
-                  VisionCard(),
-                  SizedBox(height: 14),
-                  MissionCard(),
-                  SizedBox(height: 16),
-                  SimpleMenuCard(
-                    icon: Icons.groups_outlined,
-                    title: 'Departemen',
-                  ),
-                  SizedBox(height: 12),
-                  SimpleMenuCard(
-                    icon: Icons.workspace_premium_outlined,
-                    title: 'Prestasi',
-                  ),
-                  SizedBox(height: 18),
-                  GalleryTitle(),
-                  SizedBox(height: 10),
-                  GallerySection(
-                    images: galleryImages,
-                  ),
-                  SizedBox(height: 20),
+            _buildHeader(context),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
+                children: [
+                  _buildHeroCard(),
+                  const SizedBox(height: 20),
+                  _buildAboutSection(),
+                  const SizedBox(height: 18),
+                  _buildMenuSection(context),
+                  const SizedBox(height: 18),
+                  _buildVisiMisiSection(),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            borderRadius: BorderRadius.circular(30),
+            child: const Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 18,
+                color: primaryRed,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            "Detail Organisasi",
+            style: TextStyle(
+              color: primaryRed,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const Spacer(),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.10),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.network(
+                "https://i.pravatar.cc/150?img=12",
+                fit: BoxFit.cover,
+                errorBuilder: _functionImageError,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    final String image = widget.imageUrl?.isNotEmpty == true
+        ? widget.imageUrl!
+        : "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900";
+
+    return Container(
+      height: 170,
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            image,
+            fit: BoxFit.cover,
+            errorBuilder: _functionImageError,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
+                colors: [
+                  primaryRed.withOpacity(0.88),
+                  primaryRed.withOpacity(0.25),
+                  Colors.black.withOpacity(0.05),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 16,
+            bottom: 18,
+            right: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.kategori?.isNotEmpty == true
+                      ? widget.kategori!.toUpperCase()
+                      : "ORGANISASI",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  widget.namaOrganisasi,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: primaryRed.withOpacity(0.18),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primaryRed.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Text(
+        widget.tentangOrganisasi?.isNotEmpty == true
+            ? widget.tentangOrganisasi!
+            : "Belum ada deskripsi organisasi.",
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF555555),
+          height: 1.55,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuSection(BuildContext context) {
+    return Column(
+      children: [
+        DetailMenuCard(
+          icon: Icons.groups_rounded,
+          title: "Departemen Organisasi",
+          description: "Lihat struktur dan divisi yang ada di organisasi.",
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DepartemenPage(
+                  organisasiId: widget.organisasiId,
+                  namaOrganisasi: widget.namaOrganisasi,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+
+        // INI BAGIAN PRESTASI ORGANISASI
+        DetailMenuCard(
+          icon: Icons.emoji_events_rounded,
+          title: "Prestasi Organisasi",
+          description: "Lihat daftar pencapaian dan prestasi organisasi.",
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PrestasiPage(
+                  organisasiId: widget.organisasiId,
+                  namaOrganisasi: widget.namaOrganisasi,
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVisiMisiSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Visi & Misi",
+          style: TextStyle(
+            color: Color(0xFF222222),
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildTextInfoCard(
+          title: "Visi",
+          value: widget.visi?.isNotEmpty == true
+              ? widget.visi!
+              : "Belum ada data visi.",
+        ),
+        const SizedBox(height: 12),
+        _buildTextInfoCard(
+          title: "Misi",
+          value: widget.misi?.isNotEmpty == true
+              ? widget.misi!
+              : "Belum ada data misi.",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextInfoCard({
+    required String title,
+    required String value,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: primaryRed.withOpacity(0.18),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: primaryRed,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF555555),
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      height: 78,
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: const [
+          DetailBottomNavItem(
+            icon: Icons.home_outlined,
+            label: "Home",
+            isActive: false,
+          ),
+          DetailBottomNavItem(
+            icon: Icons.business_center_rounded,
+            label: "Discover",
+            isActive: true,
+          ),
+          DetailBottomNavItem(
+            icon: Icons.bookmark_border_rounded,
+            label: "Saved",
+            isActive: false,
+          ),
+          DetailBottomNavItem(
+            icon: Icons.person_outline_rounded,
+            label: "Account",
+            isActive: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _functionImageError(
+  BuildContext context,
+  Object error,
+  StackTrace? stackTrace,
+) {
+  return Container(
+    color: Colors.grey.shade300,
+    child: const Center(
+      child: Icon(
+        Icons.image_not_supported_outlined,
+        color: Colors.grey,
+        size: 32,
+      ),
+    ),
+  );
+}
+
+class DetailMenuCard extends StatelessWidget {
+  const DetailMenuCard({
+    Key? key,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  }) : super(key: key);
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  static const Color primaryRed = Color(0xFFD90429);
+  static const Color softRed = Color(0xFFFFEFEF);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: primaryRed.withOpacity(0.22),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primaryRed.withOpacity(0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: softRed,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: primaryRed,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF555555),
+                      height: 1.35,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: primaryRed,
+              size: 16,
             ),
           ],
         ),
@@ -130,487 +498,71 @@ class DetailOrganisasiPage extends StatelessWidget {
   }
 }
 
-class HeaderSection extends StatelessWidget {
-  const HeaderSection({
-    Key? key,
-    required this.headerImage,
-    required this.logoImage,
-  }) : super(key: key);
-
-  final String headerImage;
-  final String logoImage;
-
-  static const Color primaryRed = Color(0xFFD90429);
-  static const Color softBg = Color(0xFFF8F7FC);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 250,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          SizedBox(
-            height: 210,
-            width: double.infinity,
-            child: Image.network(
-              headerImage,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey.shade300,
-                  child: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 40,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 120,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    softBg,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: -2,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: primaryRed.withOpacity(0.35),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: primaryRed,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.network(
-                        logoImage,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.image),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: primaryRed,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Keagamaan',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'UKM AL-IZZAH UNIVERSITAS\nMULIA BALIKPAPAN',
-                          style: TextStyle(
-                            color: primaryRed,
-                            fontSize: 14,
-                            height: 1.2,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SectionTitle extends StatelessWidget {
-  const SectionTitle({
+class DetailBottomNavItem extends StatelessWidget {
+  const DetailBottomNavItem({
     Key? key,
     required this.icon,
-    required this.title,
+    required this.label,
+    required this.isActive,
   }) : super(key: key);
 
   final IconData icon;
-  final String title;
+  final String label;
+  final bool isActive;
 
   static const Color primaryRed = Color(0xFFD90429);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    if (isActive) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: primaryRed,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
-          color: primaryRed,
-          size: 20,
+          color: const Color(0xFF555555),
+          size: 21,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 4),
         Text(
-          title,
+          label,
           style: const TextStyle(
-            color: primaryRed,
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
+            color: Color(0xFF555555),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
-    );
-  }
-}
-
-class TextCard extends StatelessWidget {
-  const TextCard({
-    Key? key,
-    required this.text,
-  }) : super(key: key);
-
-  final String text;
-
-  static const Color primaryRed = Color(0xFFD90429);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: primaryRed.withOpacity(0.25),
-        ),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.justify,
-        style: TextStyle(
-          color: Colors.grey.shade700,
-          fontSize: 12,
-          height: 1.7,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-
-class VisionCard extends StatelessWidget {
-  const VisionCard({Key? key}) : super(key: key);
-
-  static const Color primaryRed = Color(0xFFD90429);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-      decoration: BoxDecoration(
-        color: primaryRed,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'VISI',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Menjadi pelopor restorasi\nekosistem urban yang mandiri\ndi Kalimantan Timur.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              height: 1.25,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MissionCard extends StatelessWidget {
-  const MissionCard({Key? key}) : super(key: key);
-
-  static const Color primaryRed = Color(0xFFD90429);
-
-  static const List<String> missions = [
-    'Mengedukasi masyarakat tentang pengelolaan sampah.',
-    'Melakukan penanaman 10.000 mangrove setiap tahun.',
-    'Membangun jaringan kolaborasi antar komunitas hijau.',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE7F0FF),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'MISI',
-            style: TextStyle(
-              color: primaryRed,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Column(
-            children: missions.map((item) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 9),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '•',
-                      style: TextStyle(
-                        color: primaryRed,
-                        fontSize: 18,
-                        height: 1,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 11.5,
-                          height: 1.4,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SimpleMenuCard extends StatelessWidget {
-  const SimpleMenuCard({
-    Key? key,
-    required this.icon,
-    required this.title,
-  }) : super(key: key);
-
-  final IconData icon;
-  final String title;
-
-  static const Color primaryRed = Color(0xFFD90429);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFDF5F8),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: primaryRed.withOpacity(0.25),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: primaryRed,
-            size: 24,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: primaryRed,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              // TODO: arahkan ke halaman detail departemen/prestasi
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 5,
-              ),
-              decoration: BoxDecoration(
-                color: primaryRed,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Lihat Detail',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class GalleryTitle extends StatelessWidget {
-  const GalleryTitle({Key? key}) : super(key: key);
-
-  static const Color primaryRed = Color(0xFFD90429);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Galeri Kegiatan',
-          style: TextStyle(
-            color: primaryRed,
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            // TODO: arahkan ke halaman semua galeri
-          },
-          child: const Text(
-            'Lihat Semua',
-            style: TextStyle(
-              color: primaryRed,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class GallerySection extends StatelessWidget {
-  const GallerySection({
-    Key? key,
-    required this.images,
-  }) : super(key: key);
-
-  final List<String> images;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 115,
-      child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: images.length,
-          separatorBuilder: (context, index) {
-            return const SizedBox(width: 10);
-          },
-          itemBuilder: (context, index) {
-            final double imageWidth = index == 0 ? 150 : 90;
-
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                images[index],
-                width: imageWidth,
-                height: 115,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: imageWidth,
-                    height: 115,
-                    color: Colors.grey.shade300,
-                    child: const Icon(Icons.image),
-                  );
-                },
-              ),
-            );
-          }),
     );
   }
 }
