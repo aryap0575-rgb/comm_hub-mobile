@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:com.example.fincome_mobile_mobile/core/router_name.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/model/detail_org.dart'
-    as detail;
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/organisasi_list_model.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/model/discover_screen.dart';
-import 'package:com.example.fincome_mobile_mobile/modules/home/modules/detailorg.dart';
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/detailorg.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/profile_screen.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/home/saved_screen.dart';
 import 'package:com.example.fincome_mobile_mobile/modules/url/urls.dart';
@@ -43,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   String url = "${Urls().wallpaper()}";
 
-  late Future<DetailOrg> _futureOrganisasi;
+  late Future<OrganisasiListResponse> _futureOrganisasi;
 
   @override
   void initState() {
@@ -167,10 +166,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _openDetailOrganisasi(org) {
+  void _openDetailOrganisasi(dynamic org) {
     final int? organisasiId = org.id;
 
-    if (organisasiId == null) {
+    if (organisasiId == null || organisasiId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('ID organisasi tidak ditemukan'),
@@ -185,7 +184,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => org(id: organisasiId),
+        builder: (_) => DetailOrganisasiPage(
+          organisasiId: organisasiId,
+        ),
       ),
     );
   }
@@ -261,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
 
             // FUTURE BUILDER ORGANISASI
-            FutureBuilder<DetailOrg>(
+            FutureBuilder<OrganisasiListResponse>(
               future: _futureOrganisasi,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -380,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  String _getOrganisasiImage(org) {
+  String _getOrganisasiImage(dynamic org) {
     final sampul = org.foto?.sampul ?? '';
     final logo = org.foto?.logo ?? '';
 
@@ -395,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return 'https://picsum.photos/seed/organisasi/400/200';
   }
 
-  Widget _buildTerbaruBergabung(org) {
+  Widget _buildTerbaruBergabung(dynamic org) {
     return InkWell(
       onTap: () {
         _openDetailOrganisasi(org);
@@ -504,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final List<String> titles = [
       'COMM.HUB',
-      'COMM.HUB  ',
+      'COMM.HUB',
       'Saved',
       'Account',
     ];
@@ -569,12 +570,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               _currentIndex = index;
             });
 
-            // Saat balik ke Beranda, status bookmark disinkronkan lagi.
             if (index == 0) {
               await _syncFavoriteIds();
             }
 
-            // Saat masuk Saved lalu balik, data Home tetap bisa sinkron.
             if (index == 2) {
               await _syncFavoriteIds();
             }

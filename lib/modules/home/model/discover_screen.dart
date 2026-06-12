@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:com.example.fincome_mobile_mobile/modules/home/model/detailorg.dart';
 import 'package:com.example.fincome_mobile_mobile/service/favorite_organisasi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,13 +19,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   late Future<DiscoverOrg> _futureDiscoverOrg;
 
-  // GANTI IP INI SESUAI IP LAPTOP KAMU
   static String get baseUrl => FavoriteOrganisasiService.baseUrl;
 
-  // Untuk menandai icon bookmark yang sudah diklik di halaman Discover
   final Set<int> _savedOrgIds = {};
-
-  // Untuk loading kecil saat klik bookmark
   final Set<int> _loadingFavoriteIds = {};
 
   final List<String> categories = [
@@ -61,6 +58,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     print('STATUS DISCOVER ORG: ${response.statusCode}');
     print('BODY DISCOVER ORG: ${response.body}');
+
+    if (response.body.trim().isEmpty) {
+      throw Exception(
+        'Response API kosong. Cek URL API, IP laptop, atau terminal Django.',
+      );
+    }
 
     if (!response.body.trim().startsWith('{')) {
       throw Exception(
@@ -147,6 +150,30 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
   }
 
+  void _openDetailOrganisasi(Data item) {
+  final int? organisasiId = item.id;
+
+  if (organisasiId == null || organisasiId == 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('ID organisasi tidak ditemukan.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  print('Masuk detail organisasi ID: $organisasiId');
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DetailOrganisasiPage(
+        organisasiId: organisasiId,
+      ),
+    ),
+  );
+}
   List<Data> _filterOrganisasi(List<Data> list) {
     final keyword = _searchController.text.trim().toLowerCase();
 
@@ -254,14 +281,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Cari organisasi atau komunitas...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                  ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
                           },
-                          icon: const Icon(Icons.close, color: Colors.grey),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.grey,
+                          ),
                         )
                       : null,
                   fillColor: const Color(0xFFF5F5F5),
@@ -439,6 +472,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                   onFavoriteTap: () {
                                     _toggleFavorite(item);
                                   },
+                                  onDetailTap: () {
+                                    _openDetailOrganisasi(item);
+                                  },
                                 );
                               },
                             ),
@@ -460,6 +496,7 @@ class _CommunityListCard extends StatelessWidget {
   final bool isSaved;
   final bool isLoading;
   final VoidCallback onFavoriteTap;
+  final VoidCallback onDetailTap;
 
   const _CommunityListCard({
     required this.item,
@@ -467,6 +504,7 @@ class _CommunityListCard extends StatelessWidget {
     required this.isSaved,
     required this.isLoading,
     required this.onFavoriteTap,
+    required this.onDetailTap,
   });
 
   @override
@@ -626,9 +664,7 @@ class _CommunityListCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
-                      onPressed: () {
-                        print('ID Organisasi: ${item.id}');
-                      },
+                      onPressed: onDetailTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFC6132C),
                         shape: RoundedRectangleBorder(
@@ -668,14 +704,20 @@ class DiscoverOrg {
   List<Data>? data;
   Metadata? metadata;
 
-  DiscoverOrg({this.data, this.metadata});
+  DiscoverOrg({
+    this.data,
+    this.metadata,
+  });
 
   DiscoverOrg.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
       data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
-      });
+
+      if (json['data'] is List) {
+        json['data'].forEach((v) {
+          data!.add(Data.fromJson(v));
+        });
+      }
     }
 
     metadata =
@@ -683,17 +725,17 @@ class DiscoverOrg {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final Map<String, dynamic> result = <String, dynamic>{};
 
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
+    if (data != null) {
+      result['data'] = data!.map((v) => v.toJson()).toList();
     }
 
     if (metadata != null) {
-      data['metadata'] = metadata!.toJson();
+      result['metadata'] = metadata!.toJson();
     }
 
-    return data;
+    return result;
   }
 }
 
@@ -729,13 +771,13 @@ class Data {
   });
 
   Data.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    nama = json['nama'];
-    tentangOrganisasi = json['tentang_organisasi'];
-    wa = json['wa'];
-    email = json['email'];
-    lokasi = json['lokasi'];
+    id = _toNullableInt(json['id']);
+    name = _toNullableString(json['name']);
+    nama = _toNullableString(json['nama'] ?? json['nama_organisasi']);
+    tentangOrganisasi = _toNullableString(json['tentang_organisasi']);
+    wa = _toNullableString(json['wa']);
+    email = _toNullableString(json['email']);
+    lokasi = _toNullableString(json['lokasi']);
     isActive = json['is_active'];
 
     kategori =
@@ -745,38 +787,38 @@ class Data {
 
     foto = json['foto'] != null ? Foto.fromJson(json['foto']) : null;
 
-    creationDate = json['creation_date'];
-    updateDate = json['update_date'];
+    creationDate = _toNullableString(json['creation_date']);
+    updateDate = _toNullableString(json['update_date']);
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final Map<String, dynamic> result = <String, dynamic>{};
 
-    data['id'] = id;
-    data['name'] = name;
-    data['nama'] = nama;
-    data['tentang_organisasi'] = tentangOrganisasi;
-    data['wa'] = wa;
-    data['email'] = email;
-    data['lokasi'] = lokasi;
-    data['is_active'] = isActive;
+    result['id'] = id;
+    result['name'] = name;
+    result['nama'] = nama;
+    result['tentang_organisasi'] = tentangOrganisasi;
+    result['wa'] = wa;
+    result['email'] = email;
+    result['lokasi'] = lokasi;
+    result['is_active'] = isActive;
 
     if (kategori != null) {
-      data['kategori'] = kategori!.toJson();
+      result['kategori'] = kategori!.toJson();
     }
 
     if (user != null) {
-      data['user'] = user!.toJson();
+      result['user'] = user!.toJson();
     }
 
     if (foto != null) {
-      data['foto'] = foto!.toJson();
+      result['foto'] = foto!.toJson();
     }
 
-    data['creation_date'] = creationDate;
-    data['update_date'] = updateDate;
+    result['creation_date'] = creationDate;
+    result['update_date'] = updateDate;
 
-    return data;
+    return result;
   }
 }
 
@@ -784,18 +826,23 @@ class Kategori {
   int? id;
   String? category;
 
-  Kategori({this.id, this.category});
+  Kategori({
+    this.id,
+    this.category,
+  });
 
   Kategori.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    category = json['category'];
+    id = _toNullableInt(json['id']);
+    category = _toNullableString(
+      json['category'] ?? json['kategori'] ?? json['nama_kategori'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['category'] = category;
-    return data;
+    final Map<String, dynamic> result = <String, dynamic>{};
+    result['id'] = id;
+    result['category'] = category;
+    return result;
   }
 }
 
@@ -804,20 +851,24 @@ class User {
   String? username;
   String? email;
 
-  User({this.id, this.username, this.email});
+  User({
+    this.id,
+    this.username,
+    this.email,
+  });
 
   User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    username = json['username'];
-    email = json['email'];
+    id = _toNullableInt(json['id']);
+    username = _toNullableString(json['username']);
+    email = _toNullableString(json['email']);
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['username'] = username;
-    data['email'] = email;
-    return data;
+    final Map<String, dynamic> result = <String, dynamic>{};
+    result['id'] = id;
+    result['username'] = username;
+    result['email'] = email;
+    return result;
   }
 }
 
@@ -826,20 +877,24 @@ class Foto {
   String? logo;
   String? sampul;
 
-  Foto({this.id, this.logo, this.sampul});
+  Foto({
+    this.id,
+    this.logo,
+    this.sampul,
+  });
 
   Foto.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    logo = json['logo'];
-    sampul = json['sampul'];
+    id = _toNullableInt(json['id']);
+    logo = _toNullableString(json['logo'] ?? json['foto_profile']);
+    sampul = _toNullableString(json['sampul'] ?? json['photo']);
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['logo'] = logo;
-    data['sampul'] = sampul;
-    return data;
+    final Map<String, dynamic> result = <String, dynamic>{};
+    result['id'] = id;
+    result['logo'] = logo;
+    result['sampul'] = sampul;
+    return result;
   }
 }
 
@@ -847,17 +902,46 @@ class Metadata {
   int? code;
   String? message;
 
-  Metadata({this.code, this.message});
+  Metadata({
+    this.code,
+    this.message,
+  });
 
   Metadata.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
-    message = json['message'];
+    code = _toNullableInt(json['code'] ?? json['status_code']);
+    message = _toNullableString(json['message']);
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['code'] = code;
-    data['message'] = message;
-    return data;
+    final Map<String, dynamic> result = <String, dynamic>{};
+    result['code'] = code;
+    result['message'] = message;
+    return result;
   }
+}
+
+int? _toNullableInt(dynamic value) {
+  if (value == null) return null;
+
+  if (value is int) {
+    return value;
+  }
+
+  if (value is String) {
+    return int.tryParse(value);
+  }
+
+  return null;
+}
+
+String? _toNullableString(dynamic value) {
+  if (value == null) return null;
+
+  final text = value.toString().trim();
+
+  if (text.isEmpty || text == 'null') {
+    return null;
+  }
+
+  return text;
 }

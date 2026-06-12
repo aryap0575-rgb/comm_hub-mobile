@@ -22,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late Future<ProfileUserResponse> _futureProfile;
 
   // GANTI IP INI SESUAI IP LAPTOP KAMU
-  static const String baseUrl = 'http://192.168.1.2:8000';
+  static const String baseUrl = 'http://192.168.1.10:8000';
 
   @override
   void initState() {

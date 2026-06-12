@@ -1,38 +1,83 @@
+import 'dart:convert';
+
+import 'package:com.example.fincome_mobile_mobile/service/favorite_organisasi_service.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class DepartemenPage extends StatelessWidget {
-  const DepartemenPage({Key? key}) : super(key: key);
+class DepartemenPage extends StatefulWidget {
+  final int organisasiId;
+  final String namaOrganisasi;
 
+  const DepartemenPage({
+    Key? key,
+    required this.organisasiId,
+    this.namaOrganisasi = 'Organisasi',
+  }) : super(key: key);
+
+  @override
+  State<DepartemenPage> createState() => _DepartemenPageState();
+}
+
+class _DepartemenPageState extends State<DepartemenPage> {
   static const Color primaryRed = Color(0xFFD90429);
   static const Color softRed = Color(0xFFFFF1F1);
 
-  static const List<Map<String, String>> departemenList = [
-    {
-      "title": "Departemen Kaderisasi",
-      "desc":
-          "Bidang kaderisasi adalah tulang punggung organisasi yang bertanggung jawab merencanakan, melaksanakan, dan mengevaluasi proses penerimaan anggota baru. Kaderisasi juga menjadi sarana membentuk karakter, loyalitas, dan komitmen anggota."
-    },
-    {
-      "title": "Departemen Syiar Dakwah",
-      "desc":
-          "Departemen Syiar Dakwah berperan dalam menyusun dan menjalankan kegiatan keislaman seperti kajian, tahsin, kelas keagamaan, serta program dakwah kampus."
-    },
-    {
-      "title": "Departemen Humas dan Media",
-      "desc":
-          "Departemen Humas dan Media bertugas mengelola komunikasi organisasi, publikasi kegiatan, dokumentasi, desain konten, serta hubungan dengan pihak internal dan eksternal."
-    },
-    {
-      "title": "Departemen Dana Usaha",
-      "desc":
-          "Departemen Dana Usaha bertanggung jawab dalam merancang kegiatan usaha dan penggalangan dana untuk mendukung kebutuhan program kerja organisasi."
-    },
-    {
-      "title": "Departemen Kemuslimahan",
-      "desc":
-          "Departemen Kemuslimahan berfokus pada pembinaan, kegiatan, dan ruang pengembangan khusus bagi anggota muslimah dalam organisasi."
-    },
-  ];
+  static String get baseUrl => FavoriteOrganisasiService.baseUrl;
+
+  late Future<DepartementOrg> _futureDepartemen;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureDepartemen = getDepartemenByOrganisasiId();
+  }
+
+  Future<DepartementOrg> getDepartemenByOrganisasiId() async {
+    final Uri url = Uri.parse(
+      '$baseUrl/mobile/departemen_organisasi/${widget.organisasiId}/',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Accept': 'application/json',
+      },
+    );
+
+    print('URL GET DEPARTEMEN: $url');
+    print('STATUS GET DEPARTEMEN: ${response.statusCode}');
+    print('BODY GET DEPARTEMEN: ${response.body}');
+
+    if (response.body.trim().isEmpty) {
+      throw Exception('Response API kosong. Cek endpoint Django.');
+    }
+
+    if (!response.body.trim().startsWith('{')) {
+      throw Exception(
+        'API tidak mengembalikan JSON. Cek URL API, IP laptop, atau terminal Django.',
+      );
+    }
+
+    final Map<String, dynamic> body = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return DepartementOrg.fromJson(body);
+    }
+
+    final message = body['metadata']?['message'] ??
+        body['message'] ??
+        'Gagal mengambil data departemen';
+
+    throw Exception(message);
+  }
+
+  Future<void> _refreshDepartemen() async {
+    setState(() {
+      _futureDepartemen = getDepartemenByOrganisasiId();
+    });
+
+    await _futureDepartemen;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,35 +88,80 @@ class DepartemenPage extends StatelessWidget {
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeroCard(),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Setiap tim bekerja secara sinergis untuk mencapai visi organisasi.",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF555555),
-                        height: 1.5,
+              child: FutureBuilder<DepartementOrg>(
+                future: _futureDepartemen,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: primaryRed,
                       ),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return RefreshIndicator(
+                      onRefresh: _refreshDepartemen,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
+                        children: [
+                          _buildHeroCard(),
+                          const SizedBox(height: 20),
+                          _buildInfoText(),
+                          const SizedBox(height: 18),
+                          _buildErrorCard(snapshot.error.toString()),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final List<Data> departemenList = snapshot.data?.data ?? [];
+
+                  if (departemenList.isEmpty) {
+                    return RefreshIndicator(
+                      onRefresh: _refreshDepartemen,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
+                        children: [
+                          _buildHeroCard(),
+                          const SizedBox(height: 20),
+                          _buildInfoText(),
+                          const SizedBox(height: 18),
+                          _buildEmptyCard(),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _refreshDepartemen,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
+                      children: [
+                        _buildHeroCard(),
+                        const SizedBox(height: 20),
+                        _buildInfoText(),
+                        const SizedBox(height: 18),
+                        Column(
+                          children: departemenList.map((item) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: DepartmentCard(
+                                title: item.departemen?.isNotEmpty == true
+                                    ? item.departemen!
+                                    : 'Departemen',
+                                description:
+                                    item.detailDepartemen?.isNotEmpty == true
+                                        ? item.detailDepartemen!
+                                        : 'Belum ada detail departemen.',
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 18),
-                    Column(
-                      children: departemenList.map((item) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: DepartmentCard(
-                            title: item["title"] ?? "",
-                            description: item["desc"] ?? "",
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -182,18 +272,20 @@ class DepartemenPage extends StatelessWidget {
             right: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  "UKM AL-IZZAH",
-                  style: TextStyle(
+                  widget.namaOrganisasi.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   "Struktur Organisasi",
                   style: TextStyle(
                     color: Colors.white,
@@ -205,6 +297,65 @@ class DepartemenPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoText() {
+    return const Text(
+      "Setiap tim bekerja secara sinergis untuk mencapai visi organisasi.",
+      style: TextStyle(
+        fontSize: 12,
+        color: Color(0xFF555555),
+        height: 1.5,
+      ),
+    );
+  }
+
+  Widget _buildEmptyCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: primaryRed.withOpacity(0.22),
+          width: 1,
+        ),
+      ),
+      child: const Text(
+        'Belum ada data departemen untuk organisasi ini.',
+        style: TextStyle(
+          color: Colors.grey,
+          fontSize: 13,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: primaryRed.withOpacity(0.22),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        'Gagal mengambil data departemen:\n$message',
+        style: const TextStyle(
+          color: Colors.red,
+          fontSize: 13,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -417,4 +568,145 @@ class BottomNavItem extends StatelessWidget {
       ],
     );
   }
+}
+
+// ===========================================================
+// MODEL DEPARTEMEN
+// ===========================================================
+
+class DepartementOrg {
+  List<Data>? data;
+  Metadata? metadata;
+
+  DepartementOrg({
+    this.data,
+    this.metadata,
+  });
+
+  DepartementOrg.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = <Data>[];
+
+      if (json['data'] is List) {
+        json['data'].forEach((v) {
+          data!.add(Data.fromJson(v));
+        });
+      }
+    }
+
+    metadata =
+        json['metadata'] != null ? Metadata.fromJson(json['metadata']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> result = <String, dynamic>{};
+
+    if (data != null) {
+      result['data'] = data!.map((v) => v.toJson()).toList();
+    }
+
+    if (metadata != null) {
+      result['metadata'] = metadata!.toJson();
+    }
+
+    return result;
+  }
+}
+
+class Data {
+  int? id;
+  String? departemen;
+  String? detailDepartemen;
+  bool? isActive;
+  int? idOrganisasi;
+  String? namaOrganisasi;
+  String? creationDate;
+  String? updateDate;
+
+  Data({
+    this.id,
+    this.departemen,
+    this.detailDepartemen,
+    this.isActive,
+    this.idOrganisasi,
+    this.namaOrganisasi,
+    this.creationDate,
+    this.updateDate,
+  });
+
+  Data.fromJson(Map<String, dynamic> json) {
+    id = _toNullableInt(json['id']);
+    departemen = _toNullableString(json['departemen']);
+    detailDepartemen = _toNullableString(json['detail_departemen']);
+    isActive = json['is_active'];
+    idOrganisasi = _toNullableInt(json['id_organisasi']);
+    namaOrganisasi = _toNullableString(json['nama_organisasi']);
+    creationDate = _toNullableString(json['creation_date']);
+    updateDate = _toNullableString(json['update_date']);
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> result = <String, dynamic>{};
+
+    result['id'] = id;
+    result['departemen'] = departemen;
+    result['detail_departemen'] = detailDepartemen;
+    result['is_active'] = isActive;
+    result['id_organisasi'] = idOrganisasi;
+    result['nama_organisasi'] = namaOrganisasi;
+    result['creation_date'] = creationDate;
+    result['update_date'] = updateDate;
+
+    return result;
+  }
+}
+
+class Metadata {
+  int? code;
+  String? message;
+
+  Metadata({
+    this.code,
+    this.message,
+  });
+
+  Metadata.fromJson(Map<String, dynamic> json) {
+    code = _toNullableInt(json['code']);
+    message = _toNullableString(json['message']);
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> result = <String, dynamic>{};
+
+    result['code'] = code;
+    result['message'] = message;
+
+    return result;
+  }
+}
+
+int? _toNullableInt(dynamic value) {
+  if (value == null) return null;
+
+  if (value is int) {
+    return value;
+  }
+
+  if (value is String) {
+    return int.tryParse(value);
+  }
+
+  return null;
+}
+
+String? _toNullableString(dynamic value) {
+  if (value == null) return null;
+
+  final text = value.toString().trim();
+
+  if (text.isEmpty || text == 'null') {
+    return null;
+  }
+
+  return text;
 }
